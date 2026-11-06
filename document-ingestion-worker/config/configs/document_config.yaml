@@ -1,0 +1,23 @@
+api: ./api
+
+database: "./db"
+
+file_handler: ./file_handler
+
+llm: ./llm
+
+others: ./others
+
+chunking: ./chunking
+
+embedder: ./embedder
+
+citations: ./citations
+
+reranker: ./reranker
+
+entity_extraction: ./entity_extraction
+
+popcorn_ner: ./popcorn_ner
+
+evaluation: ./evaluation

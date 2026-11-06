@@ -1,0 +1,41 @@
+oracle_story_v2:
+  system: |
+    You are a helpful assistant. After reading a lengthy story, provide a 200 to 300 word answer to a question posed about the story. Directly respond to the question and do not chat with the user.
+
+  query: |
+    Answer the following question posed about a story.
+    QUESTION: {{query}}
+    CHAPTERS: {{article}}
+    ANSWER:
+
+  input_types: 
+    query: str
+    article: str
+
+oracle_story:
+  system: |
+    You are a helpful assistant. After reading chapters from various stories, provide a 200 to 300 word answer to a question posed about a specific story. Directly respond to the question and do not chat with the user.
+
+  query: |
+    Answer the following question posed about a story.
+    QUESTION: {{query}}
+    CHAPTERS: {{article}}
+    ANSWER:
+
+  input_types: 
+    query: str
+    article: str
+
+oracle_meeting:
+  system: |
+    You are a helpful assistant. After reading a set of lengthy meeting transcripts, provide a 200 to 300 word answer to a question posed about the meetings. Directly respond to the question and do not chat with the user.
+
+  query: |
+    Answer the following question posed about the meetings.
+    QUESTION: {{query}}
+    MEETINGS: {{article}}
+    ANSWER:
+
+  input_types: 
+    query: str
+    article: str

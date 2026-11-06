@@ -1,0 +1,9 @@
+apiVersion: v2
+name: document-assembly
+description: Helm chart for the document-assembly gateway, workers, redis, shared PVC and ingress.
+type: application
+version: v3.1.1
+appVersion: v3.1.1
+
+# Optional
+icon: https://raw.githubusercontent.com/argoproj/argo-cd/master/docs/assets/argo.png

@@ -1,0 +1,7 @@
+# Configuration will be done at .env level
+app_name: document_assembly
+# app_version: v3.0.0
+# app_description: "API for document assembly framework."
+# host: localhost
+# port: 8797
+# debug: true

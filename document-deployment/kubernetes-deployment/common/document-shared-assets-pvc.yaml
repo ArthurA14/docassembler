@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: document-assembly-shared-assets-pvc
+  namespace: document-assembly
+  labels:
+    app.kubernetes.io/name: document-shared-assets
+    app.kubernetes.io/component: storage
+spec:
+  storageClassName: nfs-csi  # default - can be omitted
+  accessModes:
+    - ReadWriteMany  # ReadOnlyMany  # ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

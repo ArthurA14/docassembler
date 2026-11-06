@@ -1,0 +1,54 @@
+template_name: t1
+description: This template generates a hook, a context, a main body with 3 paragraphs and a conclusion.
+document:
+  - section:
+      method: direct
+      title: "Introduction"
+      name: intro # snake_case identifier
+      prompt: t1_introduction
+      using: [main, context]
+      num_lines:
+        min: 10
+        max: 15
+
+  - section:
+      method: direct
+      title: "Contexte"
+      name: context
+      prompt: t1_context
+      using: [main]
+      num_lines:
+        min: 3
+        max: 5
+
+  - section:
+      method: narrative
+      title: "Descriptif"
+      name: main
+      prompt: document_outline_with_retrieval
+      method_parameters:
+        summaries_top_k: 15
+        originals_top_k: 8
+        entities_top_k: 10
+        paragraphs_count: 3
+        auto_title: true
+        sequential: false
+        restructure: true
+        prompt_paragraph: paragraph_generator
+        prompt_sequential_paragraph: sequential_paragraph_generator
+        prompt_restructure: restructure_paragraphs
+        citations: true
+      using: []
+      num_lines:
+        min: 30
+        max: 50
+
+  - section:
+      method: direct
+      title: "Conclusion : risque pour la défense"
+      name: conclusion
+      prompt: t1_conclusion
+      using: [intro, context, main]
+      num_lines:
+        min: 3
+        max: 5

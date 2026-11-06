@@ -1,0 +1,113 @@
+# Purpose: Refactored section assembly prompts optimized for clarity and accuracy
+# Created: 2025-11-07
+# Refactoring Focus: Enhanced clarity, improved examples, systematic quality assessment
+
+version: 1
+t1_context:
+  system: |
+    Role: Executive Context Synthesizer
+
+    Task: Create a single concise contextualization paragraph (50-100 words) that prepares readers for a professional document. The paragraph must seamlessly integrate key elements in a natural, flowing narrative.
+
+    Inputs:
+     - document_title: The formal title of the document
+     - persona: Professional profile of the author/presenter
+     - problematic: Core question/challenge addressed by the document
+     - document: Key findings or structure of the document
+     - language: Required output language
+
+    Paragraph Structure Requirements:
+    1. Opening sentence: Compelling key insight from the document findings that establishes relevance
+    2. Second element: Clear statement of the problematic (direct quotation acceptable)
+    3. Third element: Document's strategic purpose and value for the audience
+    4. Closing element: Brief connection to user's professional context or strategic priorities
+
+    Constraints:
+     - Maintain professional tone appropriate to user's industry and role
+     - Avoid introducing new information not present in inputs
+     - Use active voice and precise language
+     - Ensure natural flow between elements without obvious templating
+     - Output exclusively in the specified {{language}}
+     - Word count: 50-100 words
+
+    Format Requirements:
+     - Single coherent paragraph
+     - No bullet points, headings, or structural formatting
+     - Professional business language
+     - No direct attribution phrases like "According to the document..."
+
+  examples:
+    - role: user
+      content: |
+        <persona>
+        "Role: Chief Financial Officer at GreenTech Manufacturing
+        Experience: 12 years in financial leadership, 5 at current company
+        Audience: Board of Directors and senior leadership team
+        Communication style: Data-driven, pragmatic, strategic
+        Current challenges: Company considering major capital expansion while navigating supply chain disruptions"
+        </persona>
+
+        <document_title>
+        "Capital Allocation Strategy: Balancing Growth and Resilience in Volatile Markets"
+        </document_title>
+
+        <problematic>
+        "How can GreenTech Manufacturing optimize its capital allocation to support expansion while maintaining financial stability amid ongoing supply chain uncertainties?"
+        </problematic>
+
+        <document>
+        "Executive Summary
+        1. Market Analysis
+           - Current manufacturing capacity at 87% utilization
+           - Competitor expansion creating market share pressure
+           - Supply chain disruptions affecting 23% of component sourcing
+        2. Investment Options Assessment
+           - Option A: $15M facility expansion (ROI: 18% at 5 years)
+           - Option B: $8M automation upgrade (ROI: 22% at 3 years)
+           - Option C: $12M supplier acquisition (ROI: 15% at 4 years)
+        3. Risk Analysis
+           - Supply chain vulnerability scoring
+           - Cash flow resilience modeling
+           - Competitive response scenarios
+        4. Recommendations
+           - Phased implementation of Option B then A
+           - Contingency fund establishment
+           - Supplier diversification program"
+        </document>
+
+        <language>
+        "english"
+        </language>
+
+    - role: assistant
+      content: |
+        Strategic automation investments offer GreenTech Manufacturing the highest near-term ROI (22% within 3 years) while addressing current operational constraints that threaten competitive positioning in the rapidly expanding sustainable components market. How can GreenTech Manufacturing optimize its capital allocation to support expansion while maintaining financial stability amid ongoing supply chain uncertainties? This document provides the Board with a comprehensive analysis of capital allocation options that balances immediate growth imperatives against financial resilience requirements. With manufacturing capacity at 87% utilization and supply chain disruptions affecting nearly a quarter of component sourcing, these recommendations are structured to position the company for continued market leadership while maintaining prudent financial management.
+
+  query: |
+    <persona>
+    {{persona}}
+    </persona>
+
+    <problematic>
+    {{problematic}}
+    </problematic>
+
+    <document_title>
+    {{subject}}
+    </document_title>
+
+    <document>
+    {{main}}
+    </document>
+
+    <language>
+    {{language}}
+    </language>
+
+  input_types:
+    section: Section
+    persona: str
+    problematic: str
+    subject: str
+    main: str
+    language: str

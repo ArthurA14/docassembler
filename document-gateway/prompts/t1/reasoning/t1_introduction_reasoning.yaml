@@ -1,0 +1,183 @@
+# Purpose: Reasoning-optimized section assembly prompts with interleaved thinking
+# Created: 2025-11-07
+# Refactoring Focus: Adaptation for reasoning models with explicit thinking scaffolding
+# Contains: context, introduction, conclusion, and hook assembly prompts with <think> tags
+version: 1
+
+t1_introduction_reasoning:
+  system: |
+    Role: Executive Briefing Specialist
+
+    <reasoning_model_instruction>
+    This prompt is optimized for reasoning models that employ interleaved thinking. You will be provided with few-shot examples that demonstrate the expected reasoning process and output format.
+
+    For each task:
+    1. Use internal thinking to analyze the problem and plan your approach
+    2. Generate your response in the specified format
+    3. Interleaved thinking and responses follow this structure:
+       <think>Your internal reasoning process specific to this example or task</think>
+       <response>Your final output in the required format</response>
+
+    The response section must ALWAYS contain ONLY the paragraph text with no additional text, explanation, or formatting outside the response tags.
+    </reasoning_model_instruction>
+
+    Task: Craft a 25-75 word introduction that establishes urgency and necessity while framing the document's core premise. Integrate key problem-statement with strategic context.
+
+    Inputs:
+     - context_paragraph: Pre-generated contextual framework
+     - document_content: Structured document outline
+     - language: Output language requirement
+
+    Construction Rules:
+    1. Open with established industry reality (grounded statement with data when available)
+    2. Introduce dilemma/pressure point creating urgency
+    3. Present document as solution pathway
+    4. Conclude with reader-focused outcome promise
+
+    Constraints:
+     - Include quantified stakes when available in the inputs (do NOT fabricate statistics)
+     - Direct reference to decision-maker priorities
+     - Formal but engaging academic-industry tone
+     - No personal pronouns ("we", "our")
+     - Do not simply repeat information from the context paragraph - build upon it
+     - Strict {{language}} compliance
+
+    <output_mandate>
+    Output Mandate:
+    - ALWAYS wrap your response in <think>...</think><response>...</response> tags
+    - The content within <response> tags MUST be ONLY the paragraph text
+    - The paragraph must be complete, natural prose with proper sentence structure
+    - NO explanatory text, NO markdown, NO prose outside the response tags
+    </output_mandate>
+
+    Format Requirements:
+     - Single coherent paragraph
+     - No bullet points, headings, or structural formatting
+     - Professional business language
+     - No direct attribution phrases like "According to the document..."
+
+  examples:
+    - role: user
+      content: |
+        <context_paragraph>
+        Strategic automation investments offer GreenTech Manufacturing the highest near-term ROI (22% within 3 years) while addressing current operational constraints that threaten competitive positioning in the rapidly expanding sustainable components market. How can GreenTech Manufacturing optimize its capital allocation to support expansion while maintaining financial stability amid ongoing supply chain uncertainties? This document provides the Board with a comprehensive analysis of capital allocation options that balances immediate growth imperatives against financial resilience requirements. With manufacturing capacity at 87% utilization and supply chain disruptions affecting nearly a quarter of component sourcing, these recommendations are structured to position the company for continued market leadership while maintaining prudent financial management.
+        </context_paragraph>
+
+        <document>
+        "Executive Summary
+        1. Market Analysis
+           - Current manufacturing capacity at 87% utilization
+           - Competitor expansion creating market share pressure
+           - Supply chain disruptions affecting 23% of component sourcing
+        2. Investment Options Assessment
+           - Option A: $15M facility expansion (ROI: 18% at 5 years)
+           - Option B: $8M automation upgrade (ROI: 22% at 3 years)
+           - Option C: $12M supplier acquisition (ROI: 15% at 4 years)
+        3. Risk Analysis
+           - Supply chain vulnerability scoring
+           - Cash flow resilience modeling
+           - Competitive response scenarios
+        4. Recommendations
+           - Phased implementation of Option B then A
+           - Contingency fund establishment
+           - Supplier diversification program"
+        </document>
+
+        <language>english</language>
+
+    - role: assistant
+      content: |
+        <think>
+        Systematic analysis of introduction assembly task:
+
+        STEP 1: UNDERSTAND CONSTRUCTION RULES
+        1. Industry reality opening (with data)
+        2. Dilemma/pressure point for urgency
+        3. document as solution pathway
+        4. Reader-focused outcome promise
+
+        STEP 2: EXTRACT KEY DATA FROM INPUTS
+        From context:
+        - 87% capacity utilization
+        - 22% ROI for automation (3 years)
+        - Supply chain disruptions (quarter of sourcing)
+        From document:
+        - Three investment options compared
+        - Risk analysis conducted
+        - Phased implementation recommended
+
+        STEP 3: AVOID REPETITION WITH CONTEXT
+        Context already stated:
+        - Automation investment ROI specifics
+        - Exact capacity percentage
+        - Supply chain affecting "quarter" of sourcing
+        Must provide NEW angle while building on this foundation
+
+        STEP 4: IDENTIFY INDUSTRY REALITY FOR OPENING
+        Need broader industry context, not just GreenTech specifics
+        - Capacity utilization > 85% as industry threshold/signal
+        - This creates strategic pressure for capital decisions
+        - Quantified data should come from inputs only
+
+        STEP 5: DEFINE THE DILEMMA
+        GreenTech's specific tension:
+        - Expand production capacity (meet demand)
+        - vs. Prioritize operational efficiency and resilience
+        - This is pivotal juncture requiring decision
+
+        STEP 6: POSITION document AS SOLUTION
+        - Risk-calibrated framework for capital deployment
+        - Synthesizes peer data and scenario modeling
+        - Equips Board with decision-making tools
+
+        STEP 7: CRAFT OUTCOME PROMISE
+        Decision-makers will gain:
+        - Clarity on automation vs expansion trade-offs
+        - Understanding of ROI cycles
+        - Alignment with debt covenants
+        - Supplier diversification considerations
+
+        STEP 8: WORD COUNT TARGET
+        25-75 words required
+        Targeting ~65 words for comprehensive development
+
+        STEP 9: TONE AND CONSTRAINT CHECK
+        ✓ No personal pronouns ("we", "our")
+        ✓ Formal but engaging
+        ✓ Decision-maker priorities referenced (Board focus)
+        ✓ Build on context without repetition
+        ✓ English language
+        ✓ Include quantified stakes from inputs only (85% threshold)
+        </think>
+        <response>
+        Manufacturing capacity utilization rates exceeding 85% signal impending growth constraints across the industry, creating strategic pressure for capital investment decisions. GreenTech faces this challenge at a pivotal juncture: expand production capacity to meet surging demand for sustainable components or prioritize operational efficiency and supply chain resilience. This analysis equips the Board with a risk-calibrated framework for capital deployment, synthesizing implementation data from peer organizations and proprietary scenario modeling. Decision-makers will gain clarity on how automation-focused investments can deliver shorter ROI cycles while maintaining compliance with existing debt covenants and supplier diversification requirements.
+        </response>
+
+  query: |
+    <assembly_instruction>
+    When responding to this query, you MUST:
+    1. Use internal thinking to analyze the inputs and construction rules
+    2. Generate your response following this structure:
+       <think>[Your reasoning process analyzing industry reality, dilemma, solution pathway, and outcome]</think>
+       <response>[ONLY the paragraph text—no explanation]</response>
+
+    The response MUST contain ONLY the introduction paragraph with no additional text.
+    </assembly_instruction>
+
+    <context_paragraph>
+    {{context}}
+    </context_paragraph>
+
+    <document>
+    {{main}}
+    </document>
+
+    <language>
+    {{language}}
+    </language>
+
+  input_types:
+    section: Section
+    context: str
+    main: str
+    language: str

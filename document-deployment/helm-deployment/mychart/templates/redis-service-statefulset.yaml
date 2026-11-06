@@ -1,0 +1,73 @@
+{{- if .Values.redis.enabled }}
+---
+# -------------- redis-service.yaml part --------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.redis.service.name | default "redis" }}
+  namespace: {{ include "projectname.namespace" . }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.redis.service.name | default "redis" }}
+    app.kubernetes.io/component: broker
+    {{/* include "projectname.labels" . | nindent 4 */}}
+spec:
+  type: {{ .Values.redis.service.type | default .Values.service.type }}
+  selector:
+    app.kubernetes.io/name: {{ .Values.redis.service.name | default "redis" }}
+  ports:
+    - name: {{ .Values.redis.service.name | default "redis" }}
+      port: {{ .Values.redis.service.port }}
+      targetPort: {{ .Values.redis.service.targetPort }}
+---
+# ------------ redis-statefulset.yaml part -----------
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.redis.service.name | default "redis" }}
+  namespace: {{ include "projectname.namespace" . }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.redis.service.name | default "redis" }}
+    app.kubernetes.io/component: broker
+    {{/* include "projectname.labels" . | nindent 4 */}}
+spec:
+  serviceName: {{ .Values.redis.service.name | default "redis" }}
+  replicas: {{ .Values.redis.statefulset.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.redis.service.name | default "redis" }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.redis.service.name | default "redis" }}
+        app.kubernetes.io/component: broker
+    spec:
+      containers:
+        - name: redis
+          image: "{{ .Values.redis.image.fullName }}:{{ .Values.redis.image.tag }}"
+          imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+
+          ports:
+            - containerPort: {{ .Values.redis.service.targetPort }}
+              name: {{ .Values.redis.service.name | default "redis" }}
+
+{{- if .Values.redis.args }}
+          args:
+{{ toYaml .Values.redis.args | nindent 12 }}
+{{- end }}
+
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes:
+          {{- range .Values.redis.persistence.accessModes }}
+          - {{ . }}
+          {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.redis.persistence.size }}
+{{- end }}

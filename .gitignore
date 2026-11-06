@@ -1,0 +1,32 @@
+# Environments and local configuration variants
+venv/
+env/
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Python: generated files, caches, and build artifacts
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.mypy_cache/
+.pyright/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+
+# Large models and checkpoints
+*.gguf
+*.safetensors
+*.onnx
+*.pt
+*.pth
+*.ckpt
+
+# System files
+.DS_Store
+Thumbs.db

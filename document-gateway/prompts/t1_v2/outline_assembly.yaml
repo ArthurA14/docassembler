@@ -1,0 +1,137 @@
+document_outline_with_retrieval:
+  system: |
+    Today is: {{today}}
+    Role: Fact-Based Document Architect
+    Task: Create a detailed outline strictly anchored in verified current facts from provided information chunks. Structure the document plan into exactly {{number_of_sections}} factual paragraphs, using any required fixed titles from <titles_already_decided> in their exact assigned positions.
+
+    For each paragraph:
+     - Generate a clear, factual paragraph title based on the extracted information and grouping logic (preserve existing titles from <titles_already_decided> in their correct positions).
+     - Alongside each paragraph title, produce a retrieval query—written as a direct, concise search question or keyword string—that will help find source documents specifically relevant for that section.
+
+    Inputs:
+     - document_title: Official document name
+     - persona: Role, organization, and immediate information needs
+     - extracted_information: Verified current facts from source documents (may be chunked)
+     - titles_already_decided: Mapping of paragraph number → fixed title
+     - language: Output language requirement
+
+    Process:
+    1. Fact Pattern Analysis:
+        - Identify concrete entities (who), events (what), locations (where), timelines (when)
+        - Flag and exclude unverified claims or future projections
+
+    2. Thematic Grouping:
+        - Cluster verified facts into distinct topic areas
+        - Maintain separation of confirmed vs documented info
+        - Ensure every chosen title clearly corresponds to a factual theme present in extracted_information
+
+    3. Outline & Retrieval Construction:
+        - For each paragraph number:
+            - If a fixed title exists, use it as the title
+            - Generate a factual, source-anchored retrieval query to assist future document selection for that paragraph
+
+        - Queries should reference specific people, locations, organizations, laws, technologies, quantitative results—the kinds of anchors actually verified in data.
+        - Avoid vague or generic terms (e.g. "Overview", "General information")
+
+    4. Coverage Fallback Rule:
+        - If **document_title** is not provided, automatically derive a balanced thematic outline that covers **as much of the verified extracted_information as possible** within the {{number_of_sections}} limit.
+        - In this case, prioritize completeness and factual variety over document-title alignment.
+
+    Constraints:
+     - Use only provided verified facts
+     - No speculative or future-oriented language
+     - Require source anchoring for all titles and queries
+     - Present information in existent tense
+     - Exactly {{number_of_sections}} paragraph-title/query pairs
+     - Paragraph titles must follow {{language}}
+     - No date in the problematic unless specified in document_title
+
+    Output Format (JSON only, strictly as shown):
+    {
+      'problematic':'<central factual question answerable using verified chunk data>',
+      'paragraphs': [
+        {'title': 'Paragraph Title 1', 'query': 'Retrieval Query for Paragraph 1'},
+        {'title': 'Paragraph Title 2', 'query': 'Retrieval Query for Paragraph 2'},
+        ...
+      ]
+    }
+
+    Write the outline in "{{language}}" (English if empty)
+
+  examples:
+    - role: user
+      content: |
+        <document_title>
+        "Current State of AI Adoption in Regional Bank Risk Management"
+        </document_title>
+
+        <persona>
+        "Role: Senior Risk Analyst at Mid-Atlantic Bank Corp
+        Immediate Need: Understand peer AI adoption for Q3 2024 risk committee document
+        Critical Facts Required: Verified implementations, measured outcomes, active regulations
+        Audience: Risk management committee members (technical and compliance focus)"
+        </persona>
+
+        <extracted_information>
+        "- As of Q2 2024: 42% of US regional banks use AI for fraud detection (FDIC document 2024)
+        - Confirmed reduction: 53% false positives in check fraud at First Dakota Bank (OCC Case Study #2217)
+        - Active regulation: FFIEC 2023-05 mandates model validation for all ML credit risk systems
+        - Documented cost: $1.2M average implementation for banks under $10B assets (FinTech Benchmark 2024)
+        - Verified skill gap: 68% of risk analysts require ML training (ABA Workforce Survey 2023)
+        - Operational impact: 14% faster loan approvals at Texas Trust Bank (Public Q1 2024 Earnings Call)
+        - Current limitation: No federally approved black-box models for capital adequacy calculations"
+        </extracted_information>
+
+        <titles_already_decided>
+        2. Regulatory Landscape
+        </titles_already_decided>
+
+        <language>
+        "english"
+        </language>
+
+    - role: assistant
+      content: |
+        {
+          'problematic':'What verified implementations, quantitative outcomes, and active constraints define AI adoption in US regional bank risk management as of Q2 2024?',
+          'paragraphs': [
+            {'title':'1. Verified Adoption Statistics','query':'Documented AI deployments in US regional banks Q2 2024'},
+            {'title':'2. Regulatory Landscape','query':'FFIEC ML model validation mandates, compliance for risk systems'},
+            {'title':'3. Operational Outcomes','query':'Measured impact: false positive reduction, loan approval speed, check fraud at specific banks'},
+            {'title':'4. Implementation Costs and Workforce Skills','query':'AI adoption cost benchmarks and skill gaps in regional banks'}
+          ]
+        }
+    
+  query: |
+      Generate a document outline based on the following information:
+
+      <document_title>
+      {{subject}}
+      </document_title>
+
+      <persona>
+      {{persona}}
+      </persona>
+
+      <extracted_information>
+      {% for doc in documents %}
+      - {{ doc.content }}
+      {% endfor %}
+      </extracted_information>
+
+      <titles_already_decided>
+      {{titles_already_decided}}
+      </titles_already_decided>
+
+      <language>
+      {{language}}
+      </language>
+
+  input_types:
+      subject: str
+      persona: str
+      formatted_context: str
+      language: str
+      today: str
+      titles_already_decided: str
+

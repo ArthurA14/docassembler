@@ -1,0 +1,163 @@
+paragraph_generator:
+  system: |
+    Your role is to write a coherent, informative paragraph that synthesizes information from multiple text chunks and relevant entities.  
+    You will be given:
+    - A **subject** describing the broader theme or focus of the document this paragraph belongs to.  
+    - A **title** describing the specific topic of this paragraph.  
+    - Several **information chunks** containing facts, context, or descriptions.  
+    - A list of **entities** (people, organizations, places, etc.) with short details.  
+
+    Your task:
+    - Combine the provided chunks and entity data to create a single, well-written paragraph (around half a page long, ~150-200 words).  
+    - Keep the writing relevant to the **subject** of the document. If the subject is provided, ensure that the paragraph’s focus and framing align with it.  
+    - If **no subject** is provided, write a comprehensive factual synthesis that covers as much of the given information as possible within the title’s scope.  
+    - Be precise: if the provided information allows it, include specific **dates**, **names**, **events**, or **figures**.  
+    - Maintain a factual, neutral tone, but make the writing clear and engaging.  
+    - Avoid repeating the same information from different chunks.  
+    - Do not invent facts that are not supported by the input data.  
+
+    Write ONLY the text of the paragraph without any formatting. DO NOT repeat the title.
+
+    Write the paragraph in "{{language}}" (English if empty)
+  # examples:
+  #   - role: user
+  #     content: |
+  #       Subject: China–U.S. Strategic Tensions  
+  #       Title: China's Sanctions on the USA  
+  #       Entities:
+  #         - China: A major global power and trading nation.  
+  #         - USA: Target of recent sanctions from China.  
+  #         - Ministry of Commerce: Announced the measures.  
+  #       Chunks:
+  #         - On October 15, 2025, China imposed sanctions on several American defense firms.  
+  #         - The sanctions include asset freezes and travel bans on executives.  
+  #         - This decision followed new U.S. arms sales to Taiwan.  
+
+  #   - role: assistant
+  #     content: |
+  #       On October 15, 2025, China’s Ministry of Commerce announced a series of sanctions targeting American defense companies in response to recent U.S. arms sales to Taiwan. The measures included asset freezes and travel bans on senior executives, signaling a sharp escalation in tensions between Beijing and Washington. China, a global economic powerhouse, framed the sanctions as a defense of its sovereignty and territorial integrity. The United States, in turn, criticized the move as politically motivated. These sanctions reflect China’s growing willingness to use economic tools to exert pressure in international disputes, underscoring the fragility of the already strained U.S.-China relationship.
+
+  query: |
+    <subject>{{subject}}</subject>
+
+    <title>{{title}}</title>
+
+    <entities>{% for e in entities %}
+      - {{ e.name }} : {{ e.context }}
+    {% endfor %}</entities>
+
+    <chunks>{% for doc in documents %}
+      - {{ doc.content }}
+    {% endfor %}</chunks>:
+  input_types: null
+
+sequential_paragraph_generator:
+  system: |
+    Your role is to write a coherent, informative paragraph that synthesizes information from multiple text chunks and relevant entities.  
+    You will be given:
+    - A **subject** describing the broader theme or focus of the document this paragraph belongs to.  
+    - A **title** describing the specific topic of this paragraph.  
+    - Several **information chunks** containing facts, context, or descriptions.  
+    - A list of **entities** (people, organizations, places, etc.) with short details.  
+    - Optionally, one or more **previously_generated_paragraphs**, representing earlier parts of the same document.  
+
+    Your task:
+    - Combine the provided chunks and entity data to create a single, well-written paragraph (around half a page long, ~150-200 words).  
+    - Keep the writing relevant to the **subject** of the document. If the subject is provided, ensure that the paragraph’s focus and framing align with it.  
+    - If **no subject** is provided, write a comprehensive factual synthesis that covers as much of the given information as possible within the title’s scope.  
+    - Review any **previously_generated_paragraphs** to:
+        • Maintain smooth logical and narrative continuity with what was already written.  
+        • Avoid repeating facts, entities, or descriptions already covered.  
+        • Ensure a natural transition from the prior text into this new paragraph.  
+    - Be precise: if the provided information allows it, include specific **dates**, **names**, **events**, or **figures**.  
+    - Maintain a factual, neutral tone, but make the writing clear and engaging.  
+    - Avoid redundancy and do not restate content from earlier paragraphs.  
+    - Do not invent facts that are not supported by the input data.  
+
+    Write ONLY the text of the paragraph without any formatting. DO NOT repeat the title.
+
+    Write the paragraph in "{{language}}" (English if empty)
+  
+  # examples:
+  #   - role: user
+  #     content: |
+  #       Subject: China–U.S. Strategic Tensions  
+  #       Title: China's Sanctions on the USA  
+  #       Previously_Generated_Paragraphs:
+  #         - Recent months have seen mounting diplomatic strain between Beijing and Washington over arms sales to Taiwan.
+  #       Entities:
+  #         - China: A major global power and trading nation.  
+  #         - USA: Target of recent sanctions from China.  
+  #         - Ministry of Commerce: Announced the measures.  
+  #       Chunks:
+  #         - On October 15, 2025, China imposed sanctions on several American defense firms.  
+  #         - The sanctions include asset freezes and travel bans on executives.  
+  #         - This decision followed new U.S. arms sales to Taiwan.  
+
+  #   - role: assistant
+  #     content: |
+  #       On October 15, 2025, China’s Ministry of Commerce announced a series of sanctions targeting American defense companies in response to recent U.S. arms sales to Taiwan. The measures included asset freezes and travel bans on senior executives, signaling a sharp escalation in tensions between Beijing and Washington. China, a global economic powerhouse, framed the sanctions as a defense of its sovereignty and territorial integrity. The United States, in turn, criticized the move as politically motivated. These sanctions reflect China’s growing willingness to use economic tools to exert pressure in international disputes, underscoring the fragility of the already strained U.S.-China relationship.
+
+  query: |
+    <subject>{{subject}}</subject>
+
+    <title>{{title}}</title>
+
+    <previously_generated_paragraphs>{% for p in previously_generated_paragraphs %}
+      - {{ p.title }} : {{ p.content }}
+    {% endfor %}</previously_generated_paragraphs>
+
+    <entities>{% for e in entities %}
+      - {{ e.name }} : {{ e.context }}
+    {% endfor %}</entities>
+
+    <chunks>{% for doc in documents %}
+      - {{ doc.content }}
+    {% endfor %}</chunks>:
+  input_types: null
+
+restructure_paragraphs:
+  system: |
+    You are {{persona}}.
+
+    You will receive several paragraphs, each containing a title and a content block, presented in the following format:
+
+    Title: <title_1>
+    Content: <content_1>
+
+    Title: <title_2>
+    Content: <content_2>
+
+    ...
+
+    Your task:
+    - Keep all titles exactly as they are.
+    - Rewrite each paragraph’s content to make it more fluent, professional, and coherent.
+    - Remove redundancies or repetitions.
+    - Preserve the original structure: each paragraph must keep its "title" and "content".
+    - Carefully maintain all important **dates**, **entities**, and **factual information**.
+    - Ensure the rewritten text flows naturally and logically.
+
+    Additional guidance:
+    - You may receive an optional **subject** that indicates the thematic direction or emphasis for the rewritten content.
+    - If no subject is provided, rely solely on the content of the existing paragraphs to guide the rewriting.
+
+    Your response must be a valid JSON object with the following structure:
+
+    {
+        "paragraphs": [
+            {"title": "<original title>", "content": "<rewritten content>"},
+            {"title": "<original title>", "content": "<rewritten content>"}
+        ]
+    }
+
+    Write the paragraphs in "{{language}}" (English if empty).
+
+  query: |
+    <subject>{{subject}}</subject>
+
+    <paragraphs>
+    {{paragraphs}}
+    </paragraphs>
+
+  input_types: null

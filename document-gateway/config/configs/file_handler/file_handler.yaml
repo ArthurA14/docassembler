@@ -1,0 +1,13 @@
+storage_dir: temp/
+allowed_extensions:
+    - ".txt"
+    - ".pdf"
+    - ".jpg"
+    - ".jpeg"
+    - ".png"
+    - ".md"
+    - ".docx"
+    - ".xlsx"
+max_file_size: 52428800000 # 50MB default 52428800
+use_content_hash: True # Whether to use content hash as ID
+organize_by_type: True # Organize files by type

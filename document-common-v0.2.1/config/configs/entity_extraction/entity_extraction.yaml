@@ -1,0 +1,13 @@
+method: combined_scoring # combined_scoring | step_scoring
+prompt_name: entity_refining # prompt used to combine entities flagged as duplicates
+laj_prompt_name: rate_entities_importance # prompt used to sort entities at assembly
+combined_scoring_config: 
+  fuzzy_weight: 0.3
+  name_weight: 0.5
+  context_weight: 0.2
+  combined_threshold: 0.8
+step_scoring_config:
+  name_embedding_threshold: 0.8
+  context_embedding_threshold: 0.8
+  fuzzy_threshold: 0.8
+

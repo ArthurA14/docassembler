@@ -1,0 +1,2 @@
+Acquire::http::proxy "http://<PROXY_IP>:<PROXY_PORT>/";
+Acquire::https::proxy "http://<PROXY_IP>:<PROXY_PORT>/";

@@ -1,0 +1,231 @@
+{{- $root := . -}}
+{{- $appVersion := $root.Chart.AppVersion | replace "." "-" | lower -}}
+{{- range $key, $component := .Values.components }}
+{{- if $component.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-%s-deployment" $component.name $appVersion }}
+  namespace: {{ include "projectname.namespace" $root }}
+  labels:
+    app.kubernetes.io/name: {{ printf "%s-%s-deployment" $component.name $appVersion }}
+    app.kubernetes.io/component: {{ $component.component }}
+    {{/*- include "projectname.labels" $root | nindent 4 */}}
+spec:
+  replicas: {{ $component.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ printf "%s-%s" $component.name $appVersion }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ printf "%s-%s" $component.name $appVersion }}
+        app.kubernetes.io/component: {{ $component.component }}
+    spec:
+{{/*
+# {{- with $root.Values.hostAliases }}
+#       hostAliases:
+# {{ toYaml . | indent 8 }}
+# {{- end }}
+*/}}
+# -------------- document-gateway-deployment.yaml part --------------
+{{- if and $component.initContainer $component.initContainer.enabled }}
+      initContainers:
+        - name: {{ $component.initContainer.name }}
+          image: "{{ $component.initContainer.image.fullName }}:{{ $component.initContainer.image.tag }}"
+          imagePullPolicy: {{ $component.initContainer.image.pullPolicy }}
+          env:
+            - name: ASSETS_VERSION
+              value: {{ $component.initContainer.assetsVersion | quote }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              CURRENT_VERSION="$(cat /mnt/shared/.assets-version 2>/dev/null || true)"
+              if [ "$CURRENT_VERSION" != "$ASSETS_VERSION" ]; then
+                echo "Updating shared volume to version $ASSETS_VERSION"
+                mkdir -p /mnt/shared/config /mnt/shared/prompts
+                rm -rf /mnt/shared/config/* /mnt/shared/prompts/*
+                cp -r --no-preserve=ownership /seed/config/. /mnt/shared/config/
+                cp -r --no-preserve=ownership /seed/prompts/. /mnt/shared/prompts/
+                echo "$ASSETS_VERSION" > /mnt/shared/.assets-version
+              else
+                echo "Shared volume already up to date, skipping."
+              fi
+          volumeMounts:
+            - name: shared-pvc
+              mountPath: /mnt/shared
+{{- end }}
+# -----------------------------------------------------------------
+      containers:
+        - name: {{ $component.name }}
+          image: "{{ $component.image.fullName }}:{{ $component.image.tag }}"
+          imagePullPolicy: {{ $component.image.pullPolicy }}
+
+          {{/*- if and $component.container $component.container.enabled */}}
+          {{- with $component.container }}
+          {{- if .enabled }}
+          ports:
+            - name: {{ .portName | default $root.Values.container.portName }}
+              # protocol: {{ .protocol | default $root.Values.container.protocol }}
+              containerPort: {{ .port | default $root.Values.container.port }}
+          {{- end }}
+          {{- end }}
+# -------------------- workers-deployments part -------------------
+{{- if $component.command }}
+          command:
+{{ toYaml $component.command | indent 12 }}
+{{- end }}
+{{- if $component.args }}
+          args:
+{{ toYaml $component.args | indent 12 }}
+{{- end }}
+# -----------------------------------------------------------------
+          envFrom:
+            - configMapRef:
+                name: {{ include "projectname.fullname" $root }}-common-config
+{{- if and $root.Values.secrets (gt (len $root.Values.secrets) 0) }}
+            - secretRef:
+                name: {{ include "projectname.fullname" $root }}-secret
+{{- end }}
+
+          volumeMounts:
+            # 1) All shared via PVC
+            - name: shared-pvc
+              mountPath: /app/hub
+              subPath: hub
+
+            - name: shared-pvc
+              mountPath: /app/config
+              subPath: config
+
+            - name: shared-pvc
+              mountPath: /app/prompts
+              subPath: prompts
+
+            # 2) One-off overlays from the ConfigMap
+            - name: config-tree
+              mountPath: /app/config/configs/api/settings.yaml
+              subPath: configs/api/settings.yaml
+
+            - name: config-tree
+              mountPath: /app/config/configs/db/db_setup.yaml
+              subPath: configs/db/db_setup.yaml
+
+            - name: config-tree
+              mountPath: /app/config/configs/embedder/embedder.yaml
+              subPath: configs/embedder/embedder.yaml
+
+            - name: config-tree
+              mountPath: /app/config/configs/llm/llm_config.yaml
+              subPath: configs/llm/llm_config.yaml
+
+            - name: config-tree
+              mountPath: /app/config/configs/parser/parser.yaml
+              subPath: configs/parser/parser.yaml
+
+            # 3) Cache-volume
+{{- if $root.Values.cacheVolume.enabled }}
+            - name: cache-volume
+              mountPath: /app/.cache
+{{- end }}
+# ------------------------------- startupProbe
+{{- with $component.probes.startup }}
+{{- if .enabled }}
+          startupProbe:
+            httpGet:
+              path: {{ .path }}
+              port: {{ .port }}
+            periodSeconds: {{ .periodSeconds }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            failureThreshold: {{ .failureThreshold }}
+{{- end }}
+{{- end }}
+# ------------------------------- readinessProbe
+{{- with $component.probes.readiness }}
+{{- if .enabled }}
+          readinessProbe:
+{{- if eq .type "exec" }}
+            exec:
+              command:
+{{ toYaml .command | indent 16 }}
+{{- else }}
+            httpGet:
+              path: {{ .path }}
+              port: {{ .port }}
+{{- end }}
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            failureThreshold: {{ .failureThreshold }}
+{{- end }}
+{{- end }}
+# ------------------------------- livenessProbe
+{{- with $component.probes.liveness }}
+{{- if .enabled }}
+          livenessProbe:
+{{- if eq .type "exec" }}
+            exec:
+              command:
+{{ toYaml .command | indent 16 }}
+{{- else }}
+            httpGet:
+              path: {{ .path }}
+              port: {{ .port }}
+{{- end }}
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            failureThreshold: {{ .failureThreshold }}
+{{- end }}
+{{- end }}
+# -------------------------------
+          resources:
+{{ toYaml $component.resources | indent 12 }}
+
+      volumes:
+        - name: shared-pvc
+          persistentVolumeClaim:
+            claimName: {{ include "projectname.fullname" $root }}-shared-assets-pvc
+
+{{- if $root.Values.cacheVolume.enabled }}
+        - name: cache-volume
+          emptyDir:
+            sizeLimit: {{ $root.Values.cacheVolume.sizeLimit }}
+{{- end }}
+
+        - name: config-tree
+          configMap:
+            name: {{ include "projectname.fullname" $root }}-common-config
+            items:
+              - key: api-settings.yaml
+                path: configs/api/settings.yaml
+
+              - key: db-setup.yaml
+                path: configs/db/db_setup.yaml
+
+              - key: embedder-settings.yaml
+                path: configs/embedder/embedder.yaml
+
+              - key: llm-config.yaml
+                path: configs/llm/llm_config.yaml
+
+              - key: parser-settings.yaml
+                path: configs/parser/parser.yaml
+
+              - key: reranker-settings.yaml
+                path: configs/reranker/reranker.yaml
+
+{{/*- with $root.Values */}}
+{{- if and $root.Values.imagePullSecrets.enabled $root.Values.imagePullSecrets.existingSecrets }}
+      imagePullSecrets:
+        {{- range $root.Values.imagePullSecrets.existingSecrets }}
+        - name: {{ . }}
+        {{- end }}
+{{- end }}
+      restartPolicy: Always
+{{/*- end */}}
+
+{{- end }}  # Closing the first 'if' condition
+{{- end }}  # Closing the 'range' condition

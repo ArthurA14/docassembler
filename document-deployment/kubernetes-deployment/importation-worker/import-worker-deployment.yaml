@@ -1,0 +1,155 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: import-worker-deployment
+  namespace: document-assembly
+  labels:
+    app.kubernetes.io/name: import-worker
+    app.kubernetes.io/component: document-importation-worker
+spec:
+  replicas: 1  # 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: import-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: import-worker
+        app.kubernetes.io/component: document-importation-worker
+    spec:
+      containers:
+        - name: import-worker
+          image: nexus.docker.registry/document-assembly-gateway/import-worker:v3.1.0
+          # image: <NEXUS_INTERNAL_IP>:8083/document-assembly-gateway/import-worker:v3.1.0
+          imagePullPolicy: Always  # IfNotPresent
+
+          # Celery worker command
+          command:
+            - "celery"
+          args:
+            - "-A"
+            - "celery_tasks.celery_app:celery_app"
+            - "worker"
+            - "--loglevel=INFO"
+            - "--pool=solo"
+            - "-Q"
+            - "importation,celery"
+          
+          envFrom:
+            - configMapRef:
+                name: document-assembly-common-config
+
+          # env:
+          #   - name: HOSTNAME
+          #     valueFrom:
+          #       fieldRef:
+          #         fieldPath: metadata.name
+
+          volumeMounts:
+            # 1) All shared via PVC
+            - name: shared-pvc
+              mountPath: /app/hub
+              subPath: hub
+
+            - name: shared-pvc
+              mountPath: /app/config
+              subPath: config
+
+            - name: shared-pvc
+              mountPath: /app/prompts
+              subPath: prompts
+
+            # 2) One-off overlays from the ConfigMap
+            - name: config-tree
+              mountPath: /app/config/configs/api/settings.yaml
+              subPath: configs/api/settings.yaml
+
+            - name: config-tree
+              mountPath: /app/config/configs/db/db_setup.yaml
+              subPath: configs/db/db_setup.yaml
+
+            - name: config-tree
+              mountPath: /app/config/configs/embedder/embedder.yaml
+              subPath: configs/embedder/embedder.yaml
+
+            - name: config-tree
+              mountPath: /app/config/configs/llm/llm_config.yaml
+              subPath: configs/llm/llm_config.yaml
+
+            - name: config-tree
+              mountPath: /app/config/configs/parser/parser.yaml
+              subPath: configs/parser/parser.yaml
+
+            # 3) Cache-volume
+            - name: cache-volume
+              mountPath: /app/.cache
+
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                # - "celery -A celery_tasks.celery_app inspect ping -d celery@$(HOSTNAME) >/dev/null 2>&1"
+                - "celery -A celery_tasks.celery_app inspect ping >/dev/null 2>&1"
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 6
+
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #       - /bin/sh
+          #       - -c
+          #       # - "celery -A celery_tasks.celery_app inspect ping -d celery@$(HOSTNAME) >/dev/null 2>&1"
+          #       - "pgrep -f 'celery.*worker' >/dev/null"
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 30
+          #   timeoutSeconds: 5
+          #   failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "10000m"  # = 10 CPUs
+              memory: "4Gi"
+            limits:
+              # cpu: "10000m"  # = 10 CPUs - comment cpu: could help reducing latency
+              memory: "8Gi"
+              # nvidia.com/gpu: "1"
+              # nvidia.com/gpumem-percentage: 10  # 25
+              #nvidia.com/gpumem: 2048 # Can be used but prefer gpumem-percentage
+
+      volumes:
+        - name: shared-pvc
+          persistentVolumeClaim:
+            claimName: document-assembly-shared-assets-pvc
+
+        - name: cache-volume
+          emptyDir:
+            sizeLimit: 10Gi
+
+        - name: config-tree
+          configMap:
+            name: document-assembly-common-config
+            items:
+              - key: api-settings.yaml
+                path: configs/api/settings.yaml
+
+              - key: db-setup.yaml
+                path: configs/db/db_setup.yaml
+
+              - key: embedder-settings.yaml
+                path: configs/embedder/embedder.yaml
+
+              - key: llm-config.yaml
+                path: configs/llm/llm_config.yaml
+
+              - key: parser-settings.yaml
+                path: configs/parser/parser.yaml
+
+              - key: reranker-settings.yaml
+                path: configs/reranker/reranker.yaml
+      
+      imagePullSecrets:
+        - name: nexusdns
+      restartPolicy: Always

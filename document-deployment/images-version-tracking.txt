@@ -1,0 +1,7 @@
+
+Components:
+- redis: nexus.docker.registry/document-assembly-gateway/redis:8.4.2-trixie
+- document-gateway: nexus.docker.registry/document-assembly-gateway/document-gateway:v3.1.0
+- import-worker: nexus.docker.registry/document-assembly-gateway/import-worker:v3.1.0
+- docassembler-worker: nexus.docker.registry/document-assembly-gateway/docassembler-worker:v3.1.0
+

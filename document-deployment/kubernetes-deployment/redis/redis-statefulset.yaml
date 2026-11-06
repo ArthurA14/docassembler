@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: document-assembly
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/component: broker
+spec:
+  serviceName: redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: redis
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: redis
+        app.kubernetes.io/component: broker
+    spec:
+      containers:
+        - name: redis
+          image: redis:8.4.2-trixie
+          ports:
+            - containerPort: 6379
+              name: redis
+
+          args:
+            - "redis-server"
+            - "--appendonly"
+            - "yes"
+
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi

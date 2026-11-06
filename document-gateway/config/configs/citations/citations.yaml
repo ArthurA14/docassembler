@@ -1,0 +1,55 @@
+# Citation Extraction Pipeline Configuration
+# This file configures all components used in the citation extraction pipeline
+
+# document assembly integration settings
+enable_in_documents: true # Enable automatic citation extraction during document assembly
+fail_on_citation_error: false # If true, document assembly fails when citation extraction fails
+
+# Text preprocessing settings
+preprocessing:
+  min_sentence_length: 15 # Minimum character length for valid sentences (regex-based splitting)
+
+# Citation classification settings
+classification:
+  # LLM classification settings
+  prompt_name: "citation_classification" # Prompt template name
+  max_retries: 3 # Maximum retry attempts for LLM classification
+
+  # Confidence settings
+  confidence_threshold: 0.70 # Minimum confidence for citation acceptance
+
+  # Rule-based fallback thresholds (used when LLM fails)
+  quote_match_threshold: 0.90 # Threshold for DIRECT_QUOTE classification
+  close_paraphrase_threshold: 0.80 # Threshold for CLOSE_PARAPHRASE
+  loose_paraphrase_threshold: 0.65 # Threshold for LOOSE_PARAPHRASE
+  # Below this threshold = INDEPENDENT
+
+# Reranker filtering settings (semantic source pre-filtering)
+source_filtering:
+  enabled: true # Enable/disable reranker-based source filtering before classification
+  min_reranker_score: 0.60 # Minimum relevance score (0-1) to keep a source for classification
+  top_k_sources: 5 # Maximum number of top-ranked sources to pass to classifier per sentence
+  fallback_to_all_sources: true # If reranker fails, use all sources instead of none
+
+# Citation stacking settings
+stacking:
+  max_stack_size: 5 # Maximum supporting citations per stack
+  min_stack_confidence: 0.50 # Minimum confidence for multi-source stacks
+  boost_factor: 0.05 # Confidence boost per additional supporting citation
+  boost_method: "standard" # Boosting method: standard | progressive | diversity | quality
+  ranking_strategy: "combined" # Ranking strategy: confidence | source_priority | temporal | combined
+  deduplication_method: "fuzzy" # Deduplication: exact | fuzzy | semantic | hybrid
+  fuzzy_threshold: 85.0 # Fuzzy matching threshold (0-100)
+
+  # Combined ranking weights (must sum to 1.0)
+  combined_weights:
+    confidence: 0.40
+    similarity: 0.30
+    source_priority: 0.15
+    recency: 0.15
+
+# Validation settings
+validation:
+  max_offset_drift: 10 # Maximum character drift for offset validation
+  require_exact_quotes: true # Enforce exact quote text matching for DIRECT_QUOTE
+  allow_whitespace_normalize: true # Normalize whitespace in comparisons

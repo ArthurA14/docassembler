@@ -1,0 +1,110 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:8.4.2-trixie
+    # image: nexus.docker.registry/document-assembly-gateway/redis:8.4.2-trixie
+    ports:
+      - "6379:6379"
+
+  document-gateway:
+    build:
+      context: ../document-gateway
+      dockerfile: Dockerfile
+      network: host
+      secrets:
+        - netrc
+      extra_hosts:
+        - "gitlab.internal.instance.com:<GITLAB_INTERNAL_INSTANCE_IP>"  # "${GITLAB_INTERNAL_HOST}:${GITLAB_INTERNAL_IP}"
+      args:
+        USERID: 1000  # ${USERID}
+        GROUPID: 1000 # ${GROUPID}
+    user: "1000:1000" # "${USERID}:${GROUPID}"
+    image: nexus.docker.registry/document-assembly-gateway/document-gateway:v3.1.1
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      REDIS_KEY_TTL_SECONDS: 432000 # 5 days
+      PYTHONPATH: /app:/app/api_gateway
+      FASTAPI_ENV: dev
+      API_PORT: 5000
+    depends_on:
+      - redis
+    ports:
+      - "8000:5000"
+    volumes:                                       # For quick development changes testing
+    - ../document-gateway/api_gateway:/app/api_gateway
+    - ../document-gateway/celery_tasks:/app/celery_tasks
+    - ../document-gateway/src:/app/src
+    - ../document-gateway/config:/app/config
+    - ../document-gateway/prompts:/app/prompts
+
+  import-worker:
+    build:
+      context: ../document-importation-worker
+      dockerfile: Dockerfile
+      network: host
+      secrets:
+        - netrc
+      extra_hosts:
+        - "${GITLAB_INTERNAL_HOST}:${GITLAB_INTERNAL_IP}"
+    image: nexus.docker.registry/document-assembly-gateway/import-worker:v3.1.0
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      CELERY_RESULT_EXPIRES: 432000
+      PYTHONPATH: /app
+    depends_on:
+      - redis
+    # restart: unless-stopped
+    volumes:
+    - ../document-importation-worker/celery_tasks:/app/celery_tasks
+    - ../document-importation-worker/src:/app/src
+    - ../document-importation-worker/config:/app/config
+
+  docassembler-worker:
+    build:
+      context: ../document-assembly-worker
+      dockerfile: Dockerfile
+      network: host
+      secrets:
+        - netrc
+      extra_hosts:
+        - "${GITLAB_INTERNAL_HOST}:${GITLAB_INTERNAL_IP}"
+    image: nexus.docker.registry/document-assembly-gateway/docassembler-worker:v3.1.0
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0      # redis://redis:6379/2 | redis://host.docker.internal:6379/2
+      CELERY_RESULT_BACKEND: redis://redis:6379/1  # redis://redis:6379/3 | redis://host.docker.internal:6379/3
+      CELERY_RESULT_EXPIRES: 432000
+      PYTHONPATH: /app
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+    depends_on:
+      - redis
+    # restart: unless-stopped
+    volumes:
+    - ../document-assembly-worker/celery_tasks:/app/celery_tasks
+    - ../document-assembly-worker/src:/app/src
+    - ../document-assembly-worker/config:/app/config
+
+  flower:
+    image: mher/flower:2.0.1
+    # image: nexus.docker.registry/document-assembly-gateway/mher-flower:2.0.1
+    ports:
+      - "5555:5555"
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    depends_on:
+      - redis
+      - import-worker
+      - docassembler-worker
+    command: ["celery", "flower", "--port=5555", "--broker_api=redis://redis:6379/0", "--loglevel=INFO"]
+    restart: unless-stopped
+  
+secrets:
+  netrc:
+    file: ~/.netrc

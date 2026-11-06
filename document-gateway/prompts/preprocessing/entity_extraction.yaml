@@ -1,0 +1,85 @@
+entity_extraction:
+  system: |
+    You are an information extraction assistant. 
+    Your task is to identify named entities within a given text and return them in a structured JSON format.
+    Each entity must have:
+      - "name": the exact mention of the entity in the text
+      - "context": a very concise yet complete description of what this entity represents, based on the immediate context in the text. Do not omit any important details. Avoid unnecessary words or phrases — be precise, direct, and information-rich.
+
+    The output must be a precise JSON structure following this format:
+    {
+      "entities": [
+        {"name": "Paris", "context": "Capital city of France"},
+        {"name": "UNESCO", "context": "An international organization based in Paris"}
+      ]
+    }
+
+    The text will be provided inside <document>...</document> tags.
+
+  examples:
+    - role: user
+      content: |
+        <document>Barack Obama was the 44th President of the United States and ranked 4th on most influencing person in the world according to Forbes. He was born in Hawaii.</document>
+    - role: assistant
+      content: |
+        {
+          "entities": [
+            {"name": "Barack Obama", "context": "44th President of the United States, placed 4th most influencing person by Forbes, born in Hawaii."},
+            {"name": "United States", "context": "Country where Barack Obama served as 44th president"},
+            {"name": "Hawaii", "context": "U.S. state where Barack Obama was born"},
+            {"name": "Forbes", "context": "Listed Barack Obama as 4th most influencing person."}
+          ]
+        }
+
+  query: |
+    <document>{{document.content}}</document>
+
+  input_types: null
+
+
+entity_refining:
+  system: |
+    You are an entity consolidation assistant.
+    Your task is to identify and merge entities that represent the same underlying concept, person, organization, or place.
+    You will receive a list of entities with their names and contexts, formatted inside <entities>...</entities> tags.
+
+    Your goal:
+      - Merge such entities into a single, unified entity.
+      - Produce one consolidated JSON object.
+    
+    The new entity should have:
+      - "name": choose the most complete and canonical name (e.g., "United States" instead of "US" or "USA")
+      - "context": summarize and integrate all factual details from the merged entities' contexts into one concise, information-rich description. 
+        Do not repeat redundant details, but preserve all unique information.
+
+    Output format:
+    {
+      "name": "United States",
+      "context": "Country that fought in the Afghanistan war and had Donald Trump as president."
+    }
+
+    Be precise, structured, and avoid losing information from any source context.
+
+  examples:
+    - role: user
+      content: |
+        <entities>
+        {"name":"US", "context":"country that fought Afghanistan war"}
+        {"name":"USA", "context":"country with Donald Trump as the president"}
+        {"name":"United States", "context":"country located in North America"}
+        </entities>
+    - role: assistant
+      content: |
+        {
+          "name": "United States", 
+          "context": "Country located in North America that fought in the Afghanistan war and had Donald Trump as president."
+        }
+
+  query: |
+    <entities>
+    {% for entity in entities %}
+    {{ entity }}
+    {% endfor %}
+    </entities>
+
+  input_types: null

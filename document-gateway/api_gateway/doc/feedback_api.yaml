@@ -1,0 +1,165 @@
+openapi: 3.0.0
+info:
+  title: document assembly Feedback Service API
+  version: 1.0.0
+  description: API for storing user feedback on generated documents, including original and corrected section content, and initial user inputs.
+ 
+servers:
+  - url: http://localhost:8080/api/feedback
+    description: document assembly Feedback Service
+ 
+paths:
+  /feedback:
+    post:
+      summary: Submit comprehensive document feedback
+      description: Allows users to submit detailed feedback for a generated document, including per-section ratings and comments, along with contextual data about the document assembly.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackSubmission'
+            examples:
+              fullFeedback:
+                value:
+                  documentId: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+                  createdAt: "2025-05-21T10:30:00Z"
+                  originalSectionsContent:
+                    - sectionId: "intro_section"
+                      content: "This is the original introduction paragraph..."
+                    - sectionId: "conclusion_section"
+                      content: "Original conclusion here."
+                  correctedSectionsContent:
+                    - sectionId: "intro_section"
+                      content: "This is the corrected introduction paragraph by the user, with improvements."
+                    - sectionId: "conclusion_section"
+                      content: "Revised conclusion provided by the user."
+                  initialUserInputs:
+                    templateId: "professional_document_template"
+                    selectedDocRefs: ["doc_id_123", "doc_id_456", "https://example.com/document/document_guidelines"]
+                    context: "Generate a market analysis document for Q1 2025."
+                    language: "en"
+                  sectionsFeedback:
+                    - sectionId: "intro_section"
+                      rating: 4
+                      comment: "Excellent summary, very concise."
+                    - sectionId: "data_analysis_section"
+                      rating: 2
+                      comment: "The data interpretation felt a bit weak and lacked depth."
+                    - sectionId: "conclusion_section"
+                      rating: 3
+                      comment: "Good conclusion, but could be more impactful."
+      responses:
+        '201':
+          description: Feedback successfully submitted and stored.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Feedback saved successfully!"
+                  feedbackId:
+                    type: string
+                    format: uuid
+                    example: "f1e2d3c4-b5a6-9876-5432-10fedcba9876"
+        '400':
+          description: Invalid request payload or data validation error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid input data. Rating must be between 1 and 4."
+ 
+components:
+  schemas:
+    FeedbackSubmission:
+      type: object
+      required:
+        - documentId
+        - createdAt
+        - originalSectionsContent
+        - initialUserInputs
+        - sectionsFeedback
+      properties:
+        documentId:
+          type: string
+          format: uuid
+          description: Unique identifier of the document this feedback pertains to (corresponds to jobId).
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the feedback was submitted (ISO 8601 format).
+          example: "2025-05-21T10:30:00Z"
+        originalSectionsContent:
+          type: array
+          description: List of the original generated content for each section of the document.
+          items:
+            $ref: '#/components/schemas/SectionContent'
+        correctedSectionsContent:
+          type: array
+          description: |
+            Optional list of user-corrected content for each section.
+            Only include sections that were actually corrected by the user.
+          items:
+            $ref: '#/components/schemas/SectionContent'
+          nullable: true
+        initialUserInputs:
+          type: object
+          description: |
+            A JSON object containing the initial inputs provided by the user
+            for document assembly (e.g., templateId, selectedDocRefs, context).
+            Structure depends on your document Backend Service's /documents POST body.
+          additionalProperties: true
+          example:
+            templateId: "professional_document_template"
+            selectedDocRefs: ["doc_id_123", "doc_id_456"]
+            context: "Generate a market analysis document for Q1 2025."
+            language: "en"
+        sectionsFeedback:
+          type: array
+          description: Detailed feedback for each section of the document, including rating and comment.
+          items:
+            $ref: '#/components/schemas/SectionFeedback'
+ 
+    SectionContent:
+      type: object
+      required:
+        - sectionId
+        - content
+      properties:
+        sectionId:
+          type: string
+          description: Unique identifier for the section within the document.
+          example: "intro_section"
+        content:
+          type: string
+          description: The actual text content of the section.
+          example: "This is the content of the introduction section."
+ 
+    SectionFeedback:
+      type: object
+      required:
+        - sectionId
+        - rating
+      properties:
+        sectionId:
+          type: string
+          description: Unique identifier of the section being reviewed.
+          example: "intro_section"
+        rating:
+          type: integer
+          description: Rating for the section (1 to 4, where 4 is best).
+          minimum: 1
+          maximum: 4
+          example: 4
+        comment:
+          type: string
+          description: Optional detailed comment or specific feedback about the section.
+          nullable: true
+          example: "The introduction was very clear and to the point."

@@ -1,0 +1,17 @@
+title_example:
+  system: |
+    Your role is to write examples to test this application.
+
+  examples:
+    - role: user
+      content: |
+        Answer this : Test(test="test")
+
+    - role: assistant
+      content: |
+        Test(test="test")
+
+  query: |
+    Answer this : Test(test="hi, this is a test")
+
+  input_types: null

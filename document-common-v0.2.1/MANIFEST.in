@@ -1,0 +1,13 @@
+# Exclude virtual environments and caches
+prune .venv
+prune .cache
+prune build
+prune dist
+
+# Exclude Python cache
+global-exclude __pycache__
+global-exclude *.pyc
+
+# Exclude logs and temp files
+global-exclude *.log
+global-exclude *.tmp

@@ -1,0 +1,85 @@
+# Purpose: Refactored section assembly prompts optimized for clarity and accuracy
+# Created: 2025-11-07
+# Refactoring Focus: Enhanced clarity, improved examples, systematic quality assessment
+
+version: 1
+t1_conclusion:
+  system: |
+    Role: Evidence-Based Finalization Expert
+
+    Task: Produce a 50-100 word conclusion grounded in presented data, reinforcing analytical validity while maintaining prudent positioning.
+
+    Inputs:
+     - full_document: Complete document components
+     - language: Output language requirement
+
+    Structural Mandates:
+    1. Open with irrefutable evidence anchor (single verified fact from document body)
+    2. Restate core problem through solution lens
+    3. Outline implementation realities (acknowledge constraints, risks, resource requirements)
+    4. Close with measured value proposition
+
+    Constraints:
+     - Start with single verified fact from document body
+     - Avoid speculative "future of" statements
+     - Reference the most important ideas of the document
+     - Include risk acknowledgement or implementation constraints
+     - Do NOT fabricate percentages, figures, or statistics unless explicitly present in the document
+     - {{language}} compliance imperative
+
+    Format Requirements:
+     - Single coherent paragraph
+     - No bullet points, headings, or structural formatting
+     - Professional business language
+     - No direct attribution phrases like "According to the document..."
+
+  examples:
+    - role: user
+      content: |
+        <full_document>
+        ### Context
+        Strategic automation investments offer GreenTech Manufacturing the highest near-term ROI (22% within 3 years) while addressing current operational constraints that threaten competitive positioning in the rapidly expanding sustainable components market. How can GreenTech Manufacturing optimize its capital allocation to support expansion while maintaining financial stability amid ongoing supply chain uncertainties? This document provides the Board with a comprehensive analysis of capital allocation options that balances immediate growth imperatives against financial resilience requirements.
+
+        ### Introduction
+        Manufacturing capacity utilization rates exceeding 85% signal impending growth constraints across the industry, creating strategic pressure for capital investment decisions. GreenTech faces this challenge at a pivotal juncture: expand production capacity to meet surging demand for sustainable components or prioritize operational efficiency and supply chain resilience. This analysis equips the Board with a risk-calibrated framework for capital deployment, synthesizing implementation data from peer organizations and proprietary scenario modeling.
+
+        ### document Body
+        1. Market Analysis
+           - Current manufacturing capacity at 87% utilization
+           - Competitor expansion creating market share pressure
+           - Supply chain disruptions affecting 23% of component sourcing
+        2. Investment Options Assessment
+           - Option A: $15M facility expansion (ROI: 18% at 5 years)
+           - Option B: $8M automation upgrade (ROI: 22% at 3 years)
+           - Option C: $12M supplier acquisition (ROI: 15% at 4 years)
+        3. Risk Analysis
+           - Supply chain vulnerability scoring
+           - Cash flow resilience modeling
+           - Competitive response scenarios
+        4. Recommendations
+           - Phased implementation of Option B then A
+           - Contingency fund establishment
+           - Supplier diversification program"
+        </full_document>
+
+        <language>english</language>
+
+    - role: assistant
+      content: |
+        The automation upgrade option delivers the highest projected ROI at 22% within 3 years while directly addressing current capacity constraints. This analysis validates automation-focused capital deployment as the most viable path to balance growth requirements with supply chain resilience, though three implementation realities warrant emphasis: integration timelines remain subject to legacy system compatibility, workforce retraining will require dedicated resources, and expected returns assume sustained component pricing from diversified suppliers. These findings collectively address the core challenge of optimizing capital allocation for expansion while maintaining financial stability, providing the Board with a risk-calibrated execution roadmap that preserves compliance with existing debt covenants.
+
+  query: |
+    <full_document>
+    {{intro}}
+    {{context}}
+    {{main}}
+    </full_document>
+
+    <language>
+    {{language}}
+    </language>
+
+  input_types:
+    section: Section
+    main: str
+    language: str

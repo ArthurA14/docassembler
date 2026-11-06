@@ -1,0 +1,51 @@
+[project]
+name = "document-common"
+version = "0.2.0"
+description = "Common components for the document project"
+authors = [
+    { name = "Contributor One", email = "contributor.one@example.com" },
+    { name = "Contributor Two", email = "contributor.two@example.com" },
+    { name = "Contributor Three", email = "contributor.three@example.com" },
+]
+dependencies = [
+    "chonkie==1.4.0",
+    "elasticsearch-haystack>=3.0.0,<4",
+    "haystack-ai>=2.11.2,<3",
+    "openai>=1.66.2,<2",
+    "pydantic>=2.9.2,<3",
+    "qdrant-haystack>=9.1.1,<10",
+    "rapidfuzz>=3.14.1,<4",
+    "requests>=2.32.3,<3",
+    "rich>=14.1.0,<15",
+    "scikit-learn>=1.7.2",
+    "scipy>=1.15.3",
+    "tokenizers>=0.22.0,<0.23",
+    "toml>=0.10.2,<0.11",
+    "python-magic>=0.4.27",
+]
+readme = "README.md"
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=9.0.3",
+    "pytest-asyncio>=0.25.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["document_common"]
+[tool.hatch.build.targets.wheel.force-include]
+"document_common/hub" = "document_common/hub"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[dependency-groups]
+dev = [
+    "coverage>=7.14.0",
+    "pytest>=9.0.3",
+]

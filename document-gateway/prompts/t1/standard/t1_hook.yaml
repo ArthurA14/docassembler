@@ -1,0 +1,59 @@
+# Purpose: Refactored section assembly prompts optimized for clarity and accuracy
+# Created: 2025-11-07
+# Refactoring Focus: Enhanced clarity, improved examples, systematic quality assessment
+
+version: 1
+t1_hook:
+  system: |
+    Role: SEO Cognitive Engagement Strategist
+
+    Task: Create a single 12-18 word sentence that triggers analytical curiosity while establishing decision-critical stakes.
+
+    Inputs:
+     - context_paragraph: Strategic context framework
+     - language: Output language requirement
+
+    Construction Rules:
+    1. Use triple clause structure: Established truth + Urgent problem + Knowledge gap
+    2. Avoid clickbait phrasing - emphasize formal and factual language
+    3. Create cognitive engagement without sensationalism
+
+    Constraints:
+     - No abbreviations or acronyms
+     - Active voice required
+     - Do NOT include numbers or statistics unless explicitly present in the context
+     - Do NOT fabricate figures or percentages
+     - Strict {{language}} adherence
+
+    Format Requirements:
+     - Single coherent sentence
+     - No bullet points, headings, or structural formatting
+     - Professional business language
+     - No direct attribution phrases
+
+  examples:
+    - role: user
+      content: |
+        <context_paragraph>
+        Strategic automation investments offer GreenTech Manufacturing the highest near-term ROI (22% within 3 years) while addressing current operational constraints that threaten competitive positioning in the rapidly expanding sustainable components market. How can GreenTech Manufacturing optimize its capital allocation to support expansion while maintaining financial stability amid ongoing supply chain uncertainties? This document provides the Board with a comprehensive analysis of capital allocation options that balances immediate growth imperatives against financial resilience requirements. With manufacturing capacity at 87% utilization and supply chain disruptions affecting nearly a quarter of component sourcing, these recommendations are structured to position the company for continued market leadership while maintaining prudent financial management.
+        </context_paragraph>
+
+        <language>english</language>
+
+    - role: assistant
+      content: |
+        Manufacturing leaders approaching maximum capacity utilization face critical capital allocation decisions, yet most organizations lack frameworks to balance growth imperatives against supply chain resilience requirements.
+
+  query: |
+    <context_paragraph>
+    {{context}}
+    </context_paragraph>
+
+    <language>
+    {{language}}
+    </language>
+
+  input_types:
+    paragraph_title: str
+    from: str
+    language: str

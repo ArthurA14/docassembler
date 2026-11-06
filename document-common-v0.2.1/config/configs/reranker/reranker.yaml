@@ -1,0 +1,61 @@
+# Reranker Configuration
+# Supports both document retrieval reranking (Issue #25) and citation text pair scoring (Issue #33)
+
+# API Configuration
+api:
+  url: "http://vllm.<CLUSTER_IP>.nip.io/v1/rerank"
+  api_key_env_var: "QWEN_API_KEY"
+  model: "qwen3-rerank-4b"  # "bge-reranker-v2-m3"
+  timeout_seconds: 10
+  max_retries: 2
+  retry_delay: 1.0
+
+# Document Reranking Mode (Issue #25)
+# Used in retrieval pipeline to improve document ranking for summary assembly
+document_mode:
+  enabled: true
+  top_k_input: 100 # Number of documents to send to reranker (from initial retrieval)
+  top_k_output: 50 # Number of documents to return after reranking
+  min_score: 0.0 # Minimum relevance score to keep a document
+  normalize_scores: true # Normalize scores to 0-1 range
+  fallback_to_embedding: true # Fall back to embedding scores on API failure
+
+# Citation Text Pair Mode
+# Used for scoring relevance between generated text and source chunks
+citation_mode:
+  enabled: true
+  batch_size: 32 # Number of text pairs to score per API request
+  base_threshold: 0.75 # Base relevance threshold for matches
+  normalize_scores: true # Normalize scores to 0-1 range
+
+  # Adaptive threshold retry
+  adaptive_retry:
+    enabled: false
+    max_retries: 2
+    threshold_decrement: 0.1 # Lower threshold by this amount on retry
+    min_threshold: 0.50 # Don't go below this threshold
+
+  # Fallback to string matching
+  fuzzy_fallback:
+    enabled: true
+    threshold: 0.85 # RapidFuzz threshold for string matching
+    scorer: "token_sort_ratio" # Options: token_sort_ratio, partial_ratio, ratio
+    min_length: 10 # Minimum text length for fuzzy matching
+
+  # Source sentence caching
+  cache:
+    enabled: true
+    max_size: 10000 # Maximum cached source sentences
+    ttl_seconds: 3600 # Cache expiration time
+
+# Logging
+logging:
+  log_api_calls: true
+  log_fallbacks: true
+  log_scores: false # Set to true for debugging
+  log_latency: true
+
+# Performance
+performance:
+  async_enabled: false # Enable async API calls (future)
+  batch_parallel: false # Process batches in parallel (future)

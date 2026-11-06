@@ -1,0 +1,50 @@
+# Use the Docker-tagged runner
+.docker:build:
+  stage: build
+  image: docker:29.0.0-rc.2-cli
+  services:
+    - name: docker:29.0.0-rc.2-dind
+      command: ["--insecure-registry", "${NEXUS_INTERNAL_IP}:8083"]
+  # variables:
+  #   DOCKER_TLS_CERTDIR: "${DOCKER_TLS_CERTDIR}"
+  before_script:
+    - export IMAGE_TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHA}"
+    - echo "${NEXUS_CI_PASS}" | docker login -u "${NEXUS_CI_USER}" --password-stdin "${NEXUS_URL}":8083
+    # - docker login http://"${NEXUS_URL}":8083 -u "${NEXUS_CI_USER}" -p "${NEXUS_CI_PASS}"
+  script:
+    - |
+      cat > ci-netrc <<EOF
+      machine "${NEXUS_INTERNAL_IP}"
+      login "${NEXUS_CI_USER}"
+      password "${NEXUS_CI_PASS}"
+
+      machine "${NEXUS_INTERNAL_HOST}"
+      login "${NEXUS_CI_USER}"
+      password "${NEXUS_CI_PASS}"
+      EOF
+
+    # - |
+    #   docker build \
+    #     --build-arg HTTP_PROXY="${HTTP_PROXY}" \
+    #     --build-arg HTTPS_PROXY="${HTTPS_PROXY}" \
+    #     --build-arg NO_PROXY="${NO_PROXY}" \
+    #     ...
+    - |
+      docker build \
+        --add-host "${NEXUS_INTERNAL_HOST}":"${NEXUS_INTERNAL_IP}" \
+        --secret id=netrc,src=ci-netrc \
+        -f "${DOCKERFILE_PATH}" \
+        -t "${IMAGE_NAME}:${IMAGE_TAG}" \
+        -t "${IMAGE_NAME}:latest" \
+        "${BUILD_CONTEXT}"
+
+    - docker push "${IMAGE_NAME}:${IMAGE_TAG}"
+    # - docker push "${IMAGE_NAME}:latest"
+
+  artifacts:
+    documents:
+      dotenv: image.env
+  after_script:
+    - printf 'UPSTREAM_IMAGE_NAME=%s\n' "${IMAGE_NAME}" >> image.env
+    - printf 'UPSTREAM_IMAGE_TAG=%s\n' "${IMAGE_TAG}" >> image.env
+    - printf 'UPSTREAM_APP_NAME=%s\n' "document-gateway" >> image.env

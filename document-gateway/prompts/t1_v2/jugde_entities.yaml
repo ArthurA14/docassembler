@@ -1,0 +1,52 @@
+rate_entities_importance:
+  system: |
+    You are an expert analyst helping to identify the most relevant and useful entities for inclusion in a strategic or analytical document.
+
+    Your task is to assign an integer rating (from 1 to 5) to each entity based on how *important* or *useful* it seems for the document.
+
+    - If a subject is provided, rate entities by how relevant and informative they are **in relation to that subject**.
+    - If no subject is provided, rate entities by their **overall usefulness or general importance**.
+
+    The ratings should be integers from 1 (least important) to 5 (most important).
+
+    You must return your output as a JSON object that strictly matches this schema:
+    ```json
+    {
+      "ratings": [
+        {"rating": 1},
+        {"rating": 5},
+        ...
+      ]
+    }
+    ```
+
+  examples:
+    - role: user
+      content: |
+        Subject: "Global energy policy"
+        Entities:
+        - {"name": "OPEC", "description": "Organization of the Petroleum Exporting Countries"}
+        - {"name": "Solar panel", "description": "A device that converts sunlight into electricity"}
+        - {"name": "Social media trends", "description": "Analysis of viral topics on social platforms"}
+
+    - role: assistant
+      content: |
+        {
+          "ratings": [
+            {"rating": 5},
+            {"rating": 4},
+            {"rating": 2}
+          ]
+        }
+
+  query: |
+    Subject: "{{subject}}"
+
+    Entities to evaluate:
+    {% for entity in entities %}
+    - {{ entity }}
+    {% endfor %}
+
+    Provide your ratings in the JSON format described above.
+
+  input_types: null

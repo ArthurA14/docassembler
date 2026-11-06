@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "projectname.fullname" . }}-common-config
+  namespace: {{ include "projectname.namespace" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "projectname.fullname" . }}-common-config
+    app.kubernetes.io/component: config
+    {{/* include "projectname.labels" . | nindent 4 */}}
+data:
+{{- $namespace := include "projectname.namespace" . }}
+{{- $redisName := .Values.redis.service.name | default "redis" }}
+{{- $redisPort := .Values.redis.service.port | default 6379 }}
+{{- $clusterIp := .Values.cluster.ip | default "<CLUSTER_IP>" }}
+{{- $nipHost := .Values.cluster.nipHost | default (printf "%s.nip.io" $clusterIp) }}
+
+{{- range $key, $value := .Values.config.env }}
+{{- if eq $key "CELERY_BROKER_URL" }}
+  {{ $key }}: {{ $value | default (printf "redis://%s.%s.svc.cluster.local:%v/0" $redisName $namespace $redisPort) | quote }}
+{{- else if eq $key "CELERY_RESULT_BACKEND" }}
+  {{ $key }}: {{ $value | default (printf "redis://%s.%s.svc.cluster.local:%v/1" $redisName $namespace $redisPort) | quote }}
+{{- else if eq $key "REDIS_HOST" }}
+  {{ $key }}: {{ $value | default (printf "%s.%s.svc.cluster.local" $redisName $namespace) | quote }}
+{{- else }}
+  {{ $key }}: {{ $value | replace "<CLUSTER_IP>.nip.io" $nipHost | quote }}
+{{- end }}
+{{- end }}
+
+{{- range $key, $value := .Values.config.files }}
+  {{ $key }}: |
+{{ $value | replace "<CLUSTER_IP>.nip.io" $nipHost | indent 4 }}
+{{- end }}

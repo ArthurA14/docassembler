@@ -1,0 +1,17 @@
+# 2 types are allowed : `inmemory` for embedding on the running pc, `api` for running the embedding from a docker with an api.
+# if type is `inmemory` a `model` and a `dimension` can be specified
+# if type is `api` an `url` and a `dimension` MUST be provided
+#     -> The docker should accept at the specified url a json with a 'text' attribute and return a json with a 'vector' attribute that is a List[float]
+# type: api
+# url: "http://tei.genai.<CLUSTER_IP>.nip.io/" # "tei" stands for "text-embedding-inference"
+# # model: sentence-transformers/all-roberta-large-v1
+# dimension: 1024
+## AZATHOTH SETTINGS
+type: api
+url: "http://vllm.<CLUSTER_IP>.nip.io/v1"
+model: "qwen3-embed-4b"
+dimension: 768
+## LOCAL SETTINGS
+# type: api
+# url: "http://localhost:7502/"
+# dimension: 768Z

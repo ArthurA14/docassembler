@@ -1,0 +1,12 @@
+## LOCAL SETTINGS
+# model: "/models/unsloth/gemma-3-1b-it-GGUF/gemma-3-1b-it-Q4_K_M.gguf"
+# api_url: "http://localhost:7501/v1"
+## AZATHOTH SETTINGS
+model: "qwen3.6-35b"
+base_url: "http://vllm.<CLUSTER_IP>.nip.io/v1"
+## COMMON
+api_key: "no api key"
+temperature: 0.70
+max_output_tokens: 8192
+timeout: 10000.0
+top_p: 0.8

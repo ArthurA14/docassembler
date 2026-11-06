@@ -1,0 +1,9 @@
+preprocessing:
+  - processor:
+    name: key_points # code name to use in "using option"
+    type: key_points # type of subchunking
+  - processor:
+    name: summaries
+    type: summaries # type of subchunking
+context:
+  language: français

@@ -1,0 +1,99 @@
+include:
+  - local: 'ci-templates/variables/variables.yml'
+  - local: 'ci-templates/base/stages.yml'
+  - local: 'ci-templates/language/python.yml'
+  - local: 'ci-templates/base/docker-build-push.yml'
+  # - local: 'ci-templates/trigger/document-deployment.yml'
+
+run:lint:
+  stage: lint
+  extends: .python:lint
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: on_success
+    - if: $CI_COMMIT_BRANCH
+    # - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: on_success  # default behavior
+      changes:
+        - api_gateway/**/*
+        - src/**/*
+        - celery_tasks/**/*
+        - pyproject.toml
+        - uv.lock
+        - Dockerfile
+        - .dockerignore
+        - .gitlab-ci.yml
+        - ci-templates/**/*
+
+# run:tests:
+#   stage: test
+#   extends: .python:test
+#   rules:
+#     - if: $CI_COMMIT_BRANCH
+#       when: on_success
+#       changes:
+#         - api_gateway/**/*
+#         - src/**/*
+#         - celery_tasks/**/*
+#         - pyproject.toml
+#         - uv.lock
+#         - pytest.ini
+#         - .gitlab-ci.yml
+#         - ci-templates/**/*
+
+build:image:
+  stage: build
+  extends: .docker:build
+  needs: # ["run:lint", "run:tests"]
+    - job: run:lint
+    # - job: run:tests
+  rules:
+    - if: '$CI_COMMIT_TAG'  # Build/push only on a tag
+      when: on_success  # manual
+    - if: '$CI_COMMIT_BRANCH'
+    # - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: on_success
+      changes:
+        - api_gateway/**/*
+        - src/**/*
+        - celery_tasks/**/*
+        - config/**/*
+        - prompts/**/*
+        - Dockerfile
+        - .dockerignore
+        - pyproject.toml
+        - uv.lock
+        - .gitlab-ci.yml
+        - ci-templates/**/*
+        - .gitignore
+    # - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'  # Otherwise, if ...
+    #   when: always
+    - when: never # Otherwise, never execute
+
+# trigger:document-deployment:
+#   stage: trigger_deploy
+#   extends: .trigger:document-deployment
+#   needs: ["build:image"]
+#   variables:
+#     UPSTREAM_APP_NAME: "document-gateway"
+#     UPSTREAM_IMAGE_NAME: "$IMAGE_NAME"
+#     UPSTREAM_IMAGE_TAG: "$IMAGE_TAG"
+#     DEPLOY_SERVICE: "document-gateway"
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+# run:end:to:end:test:
+#   stage: end-to-end-test
+#   extends: .python:end:to:end:test
+#   rules:
+#     - if: $CI_COMMIT_BRANCH
+#       when: on_success
+#       changes:
+#         - api_gateway/**/*
+#         - src/**/*
+#         - celery_tasks/**/*
+#         - pyproject.toml
+#         - uv.lock
+#         - pytest.ini
+#         - .gitlab-ci.yml
+#         - ci-templates/**/*

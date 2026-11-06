@@ -1,0 +1,8 @@
+document_template_folder: './config/templates/document'
+prompt_folder: './prompts'
+
+preprocessing_template_folder: './config/templates/preprocessing'
+default_preprocessing: './config/templates/preprocessing/p_refined_summary_entity.yaml'
+
+# mermaid_url: 'http://127.0.0.1:3000' # P2
+# parser_url: 'http://parser.genai.<CLUSTER_IP>.nip.io/v1alpha/convert/file' # P2

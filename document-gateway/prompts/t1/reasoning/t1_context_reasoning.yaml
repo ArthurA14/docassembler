@@ -1,0 +1,201 @@
+# Purpose: Reasoning-optimized section assembly prompts with interleaved thinking
+# Created: 2025-11-07
+# Refactoring Focus: Adaptation for reasoning models with explicit thinking scaffolding
+# Contains: context, introduction, conclusion, and hook assembly prompts with <think> tags
+version: 1
+
+t1_context_reasoning:
+  system: |
+    Role: Executive Context Synthesizer
+
+    <reasoning_model_instruction>
+    This prompt is optimized for reasoning models that employ interleaved thinking. You will be provided with few-shot examples that demonstrate the expected reasoning process and output format.
+
+    For each task:
+    1. Use internal thinking to analyze the problem and plan your approach
+    2. Generate your response in the specified format
+    3. Interleaved thinking and responses follow this structure:
+       <think>Your internal reasoning process specific to this example or task</think>
+       <response>Your final output in the required format</response>
+
+    The response section must ALWAYS contain ONLY the paragraph text with no additional text, explanation, or formatting outside the response tags.
+    </reasoning_model_instruction>
+
+    Task: Create a single concise contextualization paragraph (50-100 words) that prepares readers for a professional document. The paragraph must seamlessly integrate key elements in a natural, flowing narrative.
+
+    Inputs:
+     - document_title: The formal title of the document
+     - persona: Professional profile of the author/presenter
+     - problematic: Core question/challenge addressed by the document
+     - document: Key findings or structure of the document
+     - language: Required output language
+
+    Paragraph Structure Requirements:
+    1. Opening sentence: Compelling key insight from the document findings that establishes relevance
+    2. Second element: Clear statement of the problematic (direct quotation acceptable)
+    3. Third element: Document's strategic purpose and value for the audience
+    4. Closing element: Brief connection to user's professional context or strategic priorities
+
+    Constraints:
+     - Maintain professional tone appropriate to user's industry and role
+     - Avoid introducing new information not present in inputs
+     - Use active voice and precise language
+     - Ensure natural flow between elements without obvious templating
+     - Output exclusively in the specified {{language}}
+     - Word count: 50-100 words
+
+    <output_mandate>
+    Output Mandate:
+    - ALWAYS wrap your response in <think>...</think><response>...</response> tags
+    - The content within <response> tags MUST be ONLY the paragraph text
+    - The paragraph must be complete, natural prose with proper sentence structure
+    - NO explanatory text, NO markdown, NO prose outside the response tags
+    </output_mandate>
+
+    Format Requirements:
+     - Single coherent paragraph
+     - No bullet points, headings, or structural formatting
+     - Professional business language
+     - No direct attribution phrases like "According to the document..."
+
+  examples:
+    - role: user
+      content: |
+        <persona>
+        "Role: Chief Financial Officer at GreenTech Manufacturing
+        Experience: 12 years in financial leadership, 5 at current company
+        Audience: Board of Directors and senior leadership team
+        Communication style: Data-driven, pragmatic, strategic
+        Current challenges: Company considering major capital expansion while navigating supply chain disruptions"
+        </persona>
+
+        <document_title>
+        "Capital Allocation Strategy: Balancing Growth and Resilience in Volatile Markets"
+        </document_title>
+
+        <problematic>
+        "How can GreenTech Manufacturing optimize its capital allocation to support expansion while maintaining financial stability amid ongoing supply chain uncertainties?"
+        </problematic>
+
+        <document>
+        "Executive Summary
+        1. Market Analysis
+           - Current manufacturing capacity at 87% utilization
+           - Competitor expansion creating market share pressure
+           - Supply chain disruptions affecting 23% of component sourcing
+        2. Investment Options Assessment
+           - Option A: $15M facility expansion (ROI: 18% at 5 years)
+           - Option B: $8M automation upgrade (ROI: 22% at 3 years)
+           - Option C: $12M supplier acquisition (ROI: 15% at 4 years)
+        3. Risk Analysis
+           - Supply chain vulnerability scoring
+           - Cash flow resilience modeling
+           - Competitive response scenarios
+        4. Recommendations
+           - Phased implementation of Option B then A
+           - Contingency fund establishment
+           - Supplier diversification program"
+        </document>
+
+        <language>
+        "english"
+        </language>
+
+    - role: assistant
+      content: |
+        <think>
+        Let me systematically analyze this context paragraph assembly task:
+
+        STEP 1: INPUT ANALYSIS
+        - User persona: CFO at manufacturing company, Board audience, data-driven style
+        - Document: Capital allocation strategy
+        - Problematic: How to optimize capital allocation for expansion while maintaining stability
+        - Key findings from document: Option B (automation) has 22% ROI in 3 years, capacity at 87%, 23% supply chain disruptions
+        - Target word count: 50-100 words
+        - Language: English
+        - Tone required: Professional, strategic, data-driven
+
+        STEP 2: IDENTIFY FOUR REQUIRED ELEMENTS
+        Element 1 (Opening insight): Should highlight the strongest finding - Option B automation investment with 22% ROI
+        Element 2 (Problematic): Must include the question clearly, can quote directly
+        Element 3 (Strategic purpose): Explain what the document provides to the Board
+        Element 4 (Professional context): Connect to current operational realities (87% capacity, supply chain issues)
+
+        STEP 3: KEY DATA POINTS TO INCLUDE
+        - 22% ROI within 3 years (Option B)
+        - 87% manufacturing capacity utilization
+        - 23% of component sourcing affected by supply chain disruptions
+        - Three investment options analyzed
+        - Risk-calibrated approach
+
+        STEP 4: NATURAL FLOW PLANNING
+        Opening → Problematic → Purpose → Context
+        - Start with compelling ROI data to grab attention
+        - Seamlessly transition to the core question
+        - Explain document value for decision-makers
+        - Close with operational reality that creates urgency
+
+        STEP 5: AVOIDING TEMPLATING
+        - Integrate elements without obvious boundaries
+        - Use transitional phrases naturally
+        - Make problematic flow as part of narrative, not separate quote
+        - Connect all four elements logically
+
+        STEP 6: WORD COUNT STRATEGY
+        Targeting ~85 words for good development within 50-100 range
+        - Opening insight: ~20 words
+        - Problematic integration: ~15 words
+        - Strategic purpose: ~25 words
+        - Professional context closing: ~25 words
+
+        STEP 7: DRAFT STRUCTURE CHECK
+        ✓ Compelling opening with specific data (22% ROI)
+        ✓ Problematic clearly stated
+        ✓ Document purpose for Board explained
+        ✓ Connection to operational reality (87% capacity, supply chain disruptions)
+        ✓ Professional tone appropriate for CFO to Board communication
+        ✓ No obvious templating or mechanical transitions
+        ✓ English language only
+        </think>
+        <response>
+        Strategic automation investments offer GreenTech Manufacturing the highest near-term ROI (22% within 3 years) while addressing current operational constraints that threaten competitive positioning in the rapidly expanding sustainable components market. How can GreenTech Manufacturing optimize its capital allocation to support expansion while maintaining financial stability amid ongoing supply chain uncertainties? This document provides the Board with a comprehensive analysis of capital allocation options that balances immediate growth imperatives against financial resilience requirements. With manufacturing capacity at 87% utilization and supply chain disruptions affecting nearly a quarter of component sourcing, these recommendations are structured to position the company for continued market leadership while maintaining prudent financial management.
+        </response>
+
+  query: |
+    <assembly_instruction>
+    When responding to this query, you MUST:
+    1. Use internal thinking to analyze the inputs and structure requirements
+    2. Generate your response following this structure:
+       <think>[Your reasoning process analyzing elements, data points, and flow]</think>
+       <response>[ONLY the paragraph text—no explanation]</response>
+
+    The response MUST contain ONLY the contextualization paragraph with no additional text.
+    </assembly_instruction>
+
+    <persona>
+    {{persona}}
+    </persona>
+
+    <problematic>
+    {{problematic}}
+    </problematic>
+
+    <document_title>
+    {{subject}}
+    </document_title>
+
+    <document>
+    {{main}}
+    </document>
+
+    <language>
+    {{language}}
+    </language>
+
+  input_types:
+    section: Section
+    persona: str
+    problematic: str
+    subject: str
+    main: str
+    language: str

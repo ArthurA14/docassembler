@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-cpu
+  namespace: document-assembly
+  labels:
+    app.kubernetes.io/name: llm-cpu
+    app.kubernetes.io/component: llm-cpu
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: llm-cpu
+    app.kubernetes.io/component: llm-cpu
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080

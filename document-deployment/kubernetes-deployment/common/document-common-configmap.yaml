@@ -1,0 +1,171 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: document-assembly-common-config
+  namespace: document-assembly
+  labels:
+    app.kubernetes.io/name: document-assembly-common-config
+    app.kubernetes.io/component: config
+data:
+  # Celery Configuration
+  CELERY_BROKER_URL: "redis://redis.document-assembly.svc.cluster.local:6379/0"
+  CELERY_RESULT_BACKEND: "redis://redis.document-assembly.svc.cluster.local:6379/1"
+  PYTHONPATH: "/app"
+  
+  # Redis Configuration (for direct access if needed)
+  REDIS_HOST: "redis.document-assembly.svc.cluster.local"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+
+  # Application Configuration
+  FASTAPI_ENV: "prod"
+  LOG_LEVEL: "INFO"
+  
+  # Database Configuration
+  DATABASE_URL: "http://qdrant.genai.<CLUSTER_IP>.nip.io:80"
+  DATABASE_TYPE: "qdrant"
+  
+  # Cache Configuration
+  HF_HOME: "/app/.cache/huggingface"
+  TRANSFORMERS_CACHE: "/app/.cache/huggingface"
+
+  api-settings.yaml: |
+    # Configuration will be done at .env level
+    app_name: document_assembly
+    # app_version: v3.1.0
+    # app_description: "API for document assembly framework."
+    # host: localhost
+    # port: 8797
+    # debug: true
+
+  db-setup.yaml: |
+    database: qdrant # elastic, qdrant or inmemory, if elastic or qdrant : url needed
+    url: http://qdrant.genai.<CLUSTER_IP>.nip.io:80
+    # url: http://elastic.genai.<CLUSTER_IP>.nip.io:80
+
+    indexes:
+      sections:
+        name: "sections"
+        description: "Generated sections and their metadata used in generated documents using the 'document assembly' system"
+      documents:
+        name: "documents"
+        description: "Generated documents and their metadata using the 'document assembly' system"
+      files:
+        name: "files"
+        description: "Original files metadata and storage"
+      documents:
+        name: "documents"
+        description: "Extracted text and knowledge from files"
+      feedback:
+        name: "feedback"
+        decription: "Feedback collected from users"
+      prompts:
+        name: "prompts"
+        decription: "User-defined and system prompts used for document assembly"
+      templates:
+        name: "templates"
+        decription: "Template structures for generating documents, including static and dynamic versions"
+      eval:
+        name: "eval"
+        description: "Playground for evaluation on the MSRS dataset"
+        embedding_dim: 2560
+    embed_chunks: True
+
+  embedder-settings.yaml: |
+    # 2 types are allowed : `inmemory` for embedding on the running pc, `api` for running the embedding from a docker with an api.
+    # if type is `inmemory` a `model` and a `dimension` can be specified
+    # if type is `api` an `url` and a `dimension` MUST be provided
+    #     -> The docker should accept at the specified url a json with a 'text' attribute and return a json with a 'vector' attribute that is a List[float]
+    # type: api
+    # url: "http://tei.genai.<CLUSTER_IP>.nip.io/" # "tei" stands for "text-embedding-inference"
+    # # model: sentence-transformers/all-roberta-large-v1
+    # dimension: 1024
+    ## AZATHOTH SETTINGS
+    type: api
+    url: "http://vllm.<CLUSTER_IP>.nip.io/v1"
+    model: "qwen3-embed-4b"
+    dimension: 768
+    ## LOCAL SETTINGS
+    # type: api
+    # url: "http://localhost:7502/"
+    # dimension: 768Z
+
+  llm-config.yaml: |
+    ## LOCAL SETTINGS
+    # model: "/models/unsloth/gemma-3-1b-it-GGUF/gemma-3-1b-it-Q4_K_M.gguf"
+    # api_url: "http://localhost:7501/v1"
+    ## AZATHOTH SETTINGS
+    model: "gpt-oss-120b"
+    base_url: "http://vllm.<CLUSTER_IP>.nip.io/v1"
+    ## COMMON
+    api_key: "no api key"
+    temperature: 0.70
+    max_output_tokens: 8192
+    timeout: 10000.0
+    top_p: 0.8
+
+  parser-settings.yaml: |
+    url: http://parser.genai.<CLUSTER_IP>.nip.io/v1alpha/convert/file
+
+  reranker-settings.yaml: |
+    # Reranker Configuration
+    # Supports both document retrieval reranking (Issue #25) and citation text pair scoring (Issue #33)
+
+    # API Configuration
+    api:
+      url: "http://vllm.<CLUSTER_IP>.nip.io/v1/rerank"
+      api_key_env_var: "QWEN_API_KEY"
+      model: "qwen3-rerank-4b"  # "bge-reranker-v2-m3"
+      timeout_seconds: 10
+      max_retries: 2
+      retry_delay: 1.0
+
+    # Document Reranking Mode (Issue #25)
+    # Used in retrieval pipeline to improve document ranking for summary assembly
+    document_mode:
+      enabled: true
+      top_k_input: 100 # Number of documents to send to reranker (from initial retrieval)
+      top_k_output: 50 # Number of documents to return after reranking
+      min_score: 0.0 # Minimum relevance score to keep a document
+      normalize_scores: true # Normalize scores to 0-1 range
+      fallback_to_embedding: true # Fall back to embedding scores on API failure
+
+    # Citation Text Pair Mode
+    # Used for scoring relevance between generated text and source chunks
+    citation_mode:
+      enabled: true
+      batch_size: 32 # Number of text pairs to score per API request
+      base_threshold: 0.75 # Base relevance threshold for matches
+      normalize_scores: true # Normalize scores to 0-1 range
+
+      # Adaptive threshold retry
+      adaptive_retry:
+        enabled: false
+        max_retries: 2
+        threshold_decrement: 0.1 # Lower threshold by this amount on retry
+        min_threshold: 0.50 # Don't go below this threshold
+
+      # Fallback to string matching
+      fuzzy_fallback:
+        enabled: true
+        threshold: 0.85 # RapidFuzz threshold for string matching
+        scorer: "token_sort_ratio" # Options: token_sort_ratio, partial_ratio, ratio
+        min_length: 10 # Minimum text length for fuzzy matching
+
+      # Source sentence caching
+      cache:
+        enabled: true
+        max_size: 10000 # Maximum cached source sentences
+        ttl_seconds: 3600 # Cache expiration time
+
+    # Logging
+    logging:
+      log_api_calls: true
+      log_fallbacks: true
+      log_scores: false # Set to true for debugging
+      log_latency: true
+
+    # Performance
+    performance:
+      async_enabled: false # Enable async API calls (future)
+      batch_parallel: false # Process batches in parallel (future)

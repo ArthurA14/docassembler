@@ -1,0 +1,112 @@
+# values-mock-llm.yaml
+#
+# Purpose:
+# - stop calling http://vllm.<CLUSTER_IP>.nip.io/v1 for mock test path
+# - point text assembly to an internal Kubernetes mock LLM service
+# - point embedder to the same mock service if the pipeline calls it
+# - disable reranking unless you implement /v1/rerank in the mock
+
+config:
+  files:
+    llm-config.yaml: |
+      ## MOCK INTERNAL SETTINGS
+      ## Internal Kubernetes service exposing an OpenAI-compatible fake API.
+      ## Expected endpoint:
+      ##   GET/POST http://mock-llm.doc-assembler-depl.svc.cluster.local:8000/v1/...
+      model: "mock-llm"
+      base_url: "http://mock-llm.doc-assembler-depl.svc.cluster.local:8000/v1"
+
+      ## COMMON
+      api_key: "no api key"
+      temperature: 0.70
+      max_output_tokens: 8192
+      timeout: 10000.0
+      top_p: 0.8
+
+    embedder-settings.yaml: |
+      # Mock embedding endpoint.
+      # Only valid if the mock service implements the endpoint expected by your code.
+      type: api
+      url: "http://mock-llm.doc-assembler-depl.svc.cluster.local:8000/v1"
+      model: "mock-embedder"
+      dimension: 768
+
+    reranker-settings.yaml: |
+      # Reranker Configuration
+      # Mock test mode:
+      # - no call to http://vllm.<CLUSTER_IP>.nip.io/v1/rerank
+      # - reranking disabled unless /v1/rerank is implemented in the mock
+
+      api:
+        url: "http://mock-llm.doc-assembler-depl.svc.cluster.local:8000/v1/rerank"
+        api_key_env_var: "QWEN_API_KEY"
+        model: "mock-reranker"
+        timeout_seconds: 10
+        max_retries: 0
+        retry_delay: 1.0
+
+      document_mode:
+        enabled: false
+        top_k_input: 100
+        top_k_output: 50
+        min_score: 0.0
+        normalize_scores: true
+        fallback_to_embedding: true
+
+      citation_mode:
+        enabled: false
+        batch_size: 32
+        base_threshold: 0.75
+        normalize_scores: true
+
+        adaptive_retry:
+          enabled: false
+          max_retries: 0
+          threshold_decrement: 0.1
+          min_threshold: 0.50
+
+        fuzzy_fallback:
+          enabled: true
+          threshold: 0.85
+          scorer: "token_sort_ratio"
+          min_length: 10
+
+        cache:
+          enabled: true
+          max_size: 10000
+          ttl_seconds: 3600
+
+      logging:
+        log_api_calls: true
+        log_fallbacks: true
+        log_scores: false
+        log_latency: true
+
+      performance:
+        async_enabled: false
+        batch_parallel: false
+
+components:
+  gateway:
+    resources:
+      requests:
+        cpu: "2000m"
+        memory: "2Gi"
+      limits:
+        memory: "4Gi"
+
+  importationWorker:
+    resources:
+      requests:
+        cpu: "4000m"
+        memory: "4Gi"
+      limits:
+        memory: "8Gi"
+
+  docassemblerWorker:
+    resources:
+      requests:
+        cpu: "4000m"
+        memory: "4Gi"
+      limits:
+        memory: "8Gi"

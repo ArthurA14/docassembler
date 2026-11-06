@@ -1,0 +1,1 @@
+These are config files meant for document assembly based on template for Massive

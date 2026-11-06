@@ -1,0 +1,153 @@
+# Template for Python jobs with uv
+.python-uv-job:
+  image: python:${PYTHON_VERSION}
+  # variables:
+  #   UV_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/uv"
+  # cache:
+  #   key: "uv-${CI_JOB_IMAGE}"
+  #   # key: "uv-${CI_JOB_IMAGE}-${CI_COMMIT_SHA}"  # A new blank cache for each job execution try - use with caution (could be heavy)
+  #   paths:
+  #     - .cache/uv
+  #     - .cache/pip
+  before_script:
+    - echo "${NEXUS_INTERNAL_IP} ${NEXUS_INTERNAL_HOST}" >> /etc/hosts
+    - getent hosts "${NEXUS_INTERNAL_HOST}"
+
+    - |
+      cat > ~/.netrc <<EOF
+      machine "${NEXUS_INTERNAL_IP}"
+      login "${NEXUS_CI_USER}"
+      password "${NEXUS_CI_PASS}"
+
+      machine "${NEXUS_INTERNAL_HOST}"
+      login "${NEXUS_CI_USER}"
+      password "${NEXUS_CI_PASS}"
+      EOF
+    - chmod 600 ~/.netrc
+
+    # # Credentials for the Nexus index named "nexus" in pyproject.toml
+    # - export UV_INDEX_URL="http://${NEXUS_INTERNAL_HOST}:8082/repository/python-internal/simple/"  # <-- redundant with the one on pyproject.toml
+    - export UV_INDEX_NEXUS_USERNAME="${NEXUS_CI_USER}"
+    - export UV_INDEX_NEXUS_PASSWORD="${NEXUS_CI_PASS}"
+
+    - python -m pip install --upgrade pip
+    - python -m pip install "uv==${UV_VERSION}" ruff black pytest
+    - uv --version
+
+
+.python:lint:
+  stage: lint
+  extends: .python-uv-job
+  script:
+    - uv sync --frozen
+    - uv run ruff check .       # - ruff check .     # static lint checks
+    # - uv run black --check .  # - black --check .  # format lint checks
+    # `py_compile` to catch "hard" syntax errors & uvicorn errors
+    - python -m py_compile $(find src api_gateway celery_tasks -name '*.py')
+  rules:
+    - if: '$CI_COMMIT_BRANCH'
+  
+
+# .python:test:
+#   stage: test
+#   extends: .python-uv-job
+#   script:
+#     - uv sync --frozen --dev
+#     # - python -m pip install "uvicorn[standard]"
+#     - uv run uvicorn api_gateway.main:app --host 0.0.0.0 --port 5000 > uvicorn.log 2>&1 &
+#     - sleep 5
+#     - uv run pytest -q "$PYTEST_PATH" --maxfail=1 --disable-warnings --junitxml=document.xml
+#   artifacts:
+#     when: always
+#     documents:
+#       junit: document.xml
+#     paths:
+#       - uvicorn.log
+
+# =====================
+# Only after deployment
+# =====================
+
+# .python:end:to:end:test:
+#   stage: end-to-end-test
+#   extends: .python-uv-job
+#   services:
+#     - name: redis:8.4.2-trixie
+#       alias: redis
+#     - name: nexus.docker.registry/document-assembly-gateway/document-gateway:v3.0.0
+#       alias: document-gateway
+#       variables:
+#         CELERY_BROKER_URL: redis://redis:6379/0
+#         CELERY_RESULT_BACKEND: redis://redis:6379/1
+#   variables:
+#     KUBERNETES_NAMESPACE: "document-ci-runner-latest"
+#     KUBERNETES_IMAGE_PULL_SECRETS: nexus-registry-cred
+#     CELERY_BROKER_URL: redis://redis:6379/0
+#     CELERY_RESULT_BACKEND: redis://redis:6379/1
+#     REDIS_HOST: redis
+#     REDIS_PORT: 6379
+#   script:
+#     - kubectl get secret nexus-registry-cred --namespace $NAMESPACE || echo "Secret absent from namespace $NAMESPACE"
+#     - uv sync --frozen --dev
+#     # - python -m pip install "uvicorn[standard]" requests
+#     - uv run uvicorn api_gateway.main:app --host 0.0.0.0 --port 5000 > uvicorn.log 2>&1 &
+#     - |
+#       uv run python - <<'PY'
+#       import time
+#       import requests
+
+#       url = "http://127.0.0.1:5000/docs"
+#       last_error = None
+
+#       for i in range(15):
+#           try:
+#               r = requests.get(url, timeout=2)
+#               if r.status_code < 500:
+#                   print(f"API is up after {i+1} attempt(s)")
+#                   break
+#           except Exception as exc:
+#               last_error = exc
+#           time.sleep(1)
+#       else:
+#           raise SystemExit(f"API did not start in time. Last error: {last_error}")
+#       PY
+#     - uv run pytest -q "$END_TO_END_PYTEST_PATH" --maxfail=1 --disable-warnings --junitxml=document.xml
+#   artifacts:
+#     when: always
+#     documents:
+#       junit: document.xml
+#     paths:
+#       - uvicorn.log
+
+
+# .python:end:to:end:test:
+#   stage: end-to-end-test
+#   extends: .python-uv-job
+#   services:
+#     - name: redis:8.4.2-trixie
+#       alias: redis
+#     - name: nexus.docker.registry/document-assembly-gateway/document-gateway:v3.0.0
+#       alias: document-gateway
+#       variables:
+#         CELERY_BROKER_URL: redis://redis:6379/0
+#         CELERY_RESULT_BACKEND: redis://redis:6379/1
+#   variables:
+#     KUBERNETES_NAMESPACE: "document-ci-runner-$CI_COMMIT_BRANCH"
+#     KUBERNETES_IMAGE_PULL_SECRETS: nexus-registry-cred
+#     CELERY_BROKER_URL: redis://redis:6379/0
+#     CELERY_RESULT_BACKEND: redis://redis:6379/1
+#     REDIS_HOST: redis
+#     REDIS_PORT: 6379
+#   script:
+#     - kubectl get secret nexus-registry-cred --namespace $KUBE_NAMESPACE || echo "Secret absent from namespace $KUBE_NAMESPACE"
+#     - uv sync --frozen --dev
+#     # - python -m pip install "uvicorn[standard]"
+#     - uv run uvicorn api_gateway.main:app --host 0.0.0.0 --port 5000 > uvicorn.log 2>&1 &
+#     - sleep 5
+#     - uv run pytest -q "$END_TO_END_PYTEST_PATH" --maxfail=1 --disable-warnings --junitxml=document.xml
+#   artifacts:
+#     when: always
+#     documents:
+#       junit: document.xml
+#     paths:
+#       - uvicorn.log

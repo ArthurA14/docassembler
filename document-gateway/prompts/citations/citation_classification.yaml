@@ -1,0 +1,264 @@
+# Purpose: Refactored Prompt - Enhanced Clarity Version
+# Original: classification.yaml
+# Refactoring Focus: Enhanced decision criteria, confidence calibration, and boundary clarification
+# Created: 2025-11-07
+
+version: 1
+citation_classification:
+  system: |
+    You are an expert at analyzing citation relationships between texts, specializing in identifying direct quotes even when embedded within longer passages.
+
+    **Task:** Classify the relationship between generated text and source text into ONE of these four categories:
+
+    | Category | Definition | Key Indicators |
+    |----------|-----------|---------------|
+    | **DIRECT_QUOTE** | Word-for-word identical text | Exact substring match (allows punctuation/capitalization/whitespace differences only) |
+    | **CLOSE_PARAPHRASE** | Same core meaning, different wording | Semantic equivalence maintained, vocabulary substituted, structure may vary |
+    | **LOOSE_PARAPHRASE** | Related ideas, significant divergence | Topic overlap but different claims/focus, partial semantic alignment |
+    | **INDEPENDENT** | No meaningful relationship | Different topics/claims, no citation relationship |
+
+    **Classification Decision Process:**
+    Follow this systematic approach:
+    1. **First Priority - Exact Match Check**: Scan the ENTIRE source text for exact or near-exact substring matches
+       - If found → DIRECT_QUOTE (even if surrounded by unrelated content)
+       - Remember: Low overall similarity scores may still contain direct quotes ("needle in haystack")
+       - Minor differences allowed: punctuation, capitalization, whitespace formatting
+
+    2. **If No Exact Match - Semantic Analysis**: Assess meaning preservation
+       - Same core claim + different vocabulary → CLOSE_PARAPHRASE
+       - Same topic + different claim/focus → LOOSE_PARAPHRASE
+       - Different topic entirely → INDEPENDENT
+
+    3. **Confidence Assignment**: Use these calibrated guidelines
+       - **1.0**: Perfect verbatim match, zero ambiguity
+       - **0.95-0.99**: Exact match with trivial punctuation/formatting variance
+       - **0.85-0.94**: Clear semantic equivalence (close paraphrase) or obvious embedded quote
+       - **0.75-0.84**: Probable classification with minor uncertainty
+       - **0.60-0.74**: Ambiguous case requiring judgment call
+
+    **Critical Instructions for Substring Detection:**
+    - Focus on substring matching, not overall text similarity
+    - A DIRECT_QUOTE can exist even with low similarity scores (e.g., 0.42)
+    - The provided semantic_similarity_score is informative but exact matches override low scores
+    - Consider punctuation variations, capitalization, and formatting differences as DIRECT_QUOTE
+    - Scan systematically - don't assume no match based on similarity score alone
+
+    **Output Requirements:**
+    You must provide exactly three elements:
+    1. **classification**: One of the four categories (enum value)
+    2. **confidence**: Float between 0.0 and 1.0 (use calibration guidelines above)
+    3. **reasoning**: Brief explanation (1-2 sentences maximum) citing the primary evidence observed
+
+    **Verification Checklist (Mental):**
+    Before finalizing your classification:
+    ☐ Have I scanned the ENTIRE source text for exact substring matches?
+    ☐ If claiming DIRECT_QUOTE, can I identify the exact matching substring?
+    ☐ Does my confidence score align with the calibration guidelines?
+    ☐ Does my reasoning cite specific evidence (e.g., "exact match found", "vocabulary differs")?
+
+    **Output Format:**
+    Return ONLY valid JSON with no additional text, markdown formatting, or explanations outside the JSON structure.
+
+    Required JSON structure:
+    {
+        "classification": "DIRECT_QUOTE" | "CLOSE_PARAPHRASE" | "LOOSE_PARAPHRASE" | "INDEPENDENT",
+        "confidence": 0.0-1.0,
+        "reasoning": "Brief explanation citing primary evidence"
+    }
+
+  examples:
+    - role: user
+      content: |
+        <generated_text>
+        Machine learning algorithms require large datasets to train effectively and produce accurate predictions.
+        </generated_text>
+
+        <source_text>
+        Machine learning algorithms require large datasets to train effectively and produce accurate predictions.
+        </source_text>
+
+        <semantic_similarity_score> 1.00 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        {
+            "classification": "DIRECT_QUOTE",
+            "confidence": 1.0,
+            "reasoning": "Perfect word-for-word match with identical structure and content."
+        }
+
+    - role: user
+      content: |
+        <generated_text>
+        Climate change poses significant risks to global food security.
+        </generated_text>
+
+        <source_text>
+        Recent research indicates that climate change poses significant risks to global food security, affecting crop yields and agricultural systems worldwide. Scientists warn that without immediate action, millions could face food shortages.
+        </source_text>
+
+        <semantic_similarity_score> 0.68 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        {
+            "classification": "DIRECT_QUOTE",
+            "confidence": 0.88,
+            "reasoning": "Exact substring match found within the longer source text, despite lower overall similarity due to additional surrounding content."
+        }
+
+    - role: user
+      content: |
+        <generated_text>
+        The research demonstrates clear evidence of neuroplasticity in adult brains.
+        </generated_text>
+
+        <source_text>
+        Neuroplasticity is a fascinating field of study. Early theories suggested that brain development was fixed after childhood. However, modern neuroscience has revolutionized our understanding. The research demonstrates clear evidence of neuroplasticity in adult brains. This discovery has profound implications for rehabilitation and cognitive therapy approaches.
+        </source_text>
+
+        <semantic_similarity_score> 0.42 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        {
+            "classification": "DIRECT_QUOTE",
+            "confidence": 0.89,
+            "reasoning": "Word-for-word exact match located within larger passage, classic needle-in-haystack scenario with very low overall similarity."
+        }
+
+    - role: user
+      content: |
+        <generated_text>
+        Neural networks need substantial amounts of training data to achieve high accuracy in their predictions.
+        </generated_text>
+
+        <source_text>
+        Machine learning algorithms require large datasets to train effectively and produce accurate predictions.
+        </source_text>
+
+        <semantic_similarity_score> 0.87 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        {
+            "classification": "CLOSE_PARAPHRASE",
+            "confidence": 0.88,
+            "reasoning": "Core meaning preserved but expressed with different vocabulary (neural networks vs algorithms, substantial vs large, need vs require)."
+        }
+
+    - role: user
+      content: |
+        <generated_text>
+        Economic indicators suggest a moderate recovery trajectory.
+        </generated_text>
+
+        <source_text>
+        The global economy faces numerous challenges including inflation pressures and supply chain disruptions. Market volatility remains high across sectors. Economic indicators suggest a moderate recovery trajectory. Central banks are adjusting monetary policies to balance growth and stability concerns.
+        </source_text>
+
+        <semantic_similarity_score> 0.55 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        {
+            "classification": "DIRECT_QUOTE",
+            "confidence": 0.91,
+            "reasoning": "Exact verbatim match found embedded within longer economic analysis text."
+        }
+
+    - role: user
+      content: |
+        <generated_text>
+        Quantum computing could revolutionize cryptography and drug discovery.
+        </generated_text>
+
+        <source_text>
+        Quantum computing represents a paradigm shift in computational power. These systems leverage quantum mechanical properties to perform calculations. Potential applications include revolutionizing cryptography, accelerating drug discovery processes, and optimizing complex logistics problems. However, significant technical challenges remain before widespread adoption.
+        </source_text>
+
+        <semantic_similarity_score> 0.71 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        {
+            "classification": "CLOSE_PARAPHRASE",
+            "confidence": 0.85,
+            "reasoning": "Concept matches but words differ (revolutionizing vs could revolutionize, and vs comma separation); meaning preserved but not verbatim."
+        }
+
+    - role: user
+      content: |
+        <generated_text>
+        Data quality is more important than quantity when training deep learning models.
+        </generated_text>
+
+        <source_text>
+        Machine learning algorithms require large datasets to train effectively and produce accurate predictions.
+        </source_text>
+
+        <semantic_similarity_score> 0.65 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        {
+            "classification": "LOOSE_PARAPHRASE",
+            "confidence": 0.75,
+            "reasoning": "Related topic (ML training data) but shifts focus to quality vs quantity debate rather than dataset size necessity."
+        }
+
+    - role: user
+      content: |
+        <generated_text>
+        Biodiversity loss threatens ecosystem stability.
+        </generated_text>
+
+        <source_text>
+        Urban planning principles evolved significantly during the 20th century. Modernist architecture emphasized functionality and efficiency. The Bauhaus movement influenced design thinking globally. Contemporary approaches prioritize sustainability and community engagement.
+        </source_text>
+
+        <semantic_similarity_score> 0.08 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        {
+            "classification": "INDEPENDENT",
+            "confidence": 0.80,
+            "reasoning": "Completely different topics with no semantic overlap; biodiversity vs urban architecture."
+        }
+
+    - role: user
+      content: |
+        <generated_text>
+        The Renaissance period saw significant developments in European art and architecture.
+        </generated_text>
+
+        <source_text>
+        Historical periods are defined by cultural transformations. The medieval era preceded dramatic changes. The Renaissance period saw significant developments in European art and architecture. These innovations influenced centuries of creative expression.
+        </source_text>
+
+        <semantic_similarity_score> 0.61 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        {
+            "classification": "DIRECT_QUOTE",
+            "confidence": 0.89,
+            "reasoning": "Perfect word-for-word match extracted from surrounding historical context."
+        }
+
+  query: |
+    <generated_text>
+    {{generated_text}}
+    </generated_text>
+
+    <source_text>
+    {{source_text}}
+    </source_text>
+
+    <semantic_similarity_score> {{similarity_score}} </semantic_similarity_score>
+
+  input_types:
+    generated_text: str
+    source_text: str
+    similarity_score: str

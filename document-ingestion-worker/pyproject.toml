@@ -1,0 +1,58 @@
+[project]
+name = "document"
+version = "3.1.0"
+description = "A framework for generating documents on any subject given documents and a title."
+authors = [
+    { name = "Contributor Two", email = "contributor.two@example.com" },
+    { name = "Contributor One", email = "contributor.one@example.com" },
+    { name = "Contributor Three", email = "contributor.three@example.com" },
+]
+requires-python = ">=3.10,<3.13"
+readme = "README.md"
+dependencies = [
+    "requests>=2.32.3,<3",
+    "pydantic>=2.9.2,<3",
+    "haystack-ai>=2.11.2,<3",
+    "dotenv>=0.9.9,<0.10",
+    "celery>=5.6.2",
+    "redis>=7.3.0",
+    "document-common==0.1.13",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4,<9",
+]
+
+[tool.uv]
+package = false
+
+[[tool.uv.index]]
+url = "https://gitlab.internal.instance.com/api/v4/projects/PROJECT_ID/packages/pypi/simple"
+# url = "http://nexus.internal:8082/repository/gitlab-pypi-internal/simple/"
+default = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 90
+
+[tool.ruff.lint]
+ignore = ["I001"]
+extend-select = ["I"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/components/base/document_store.py" = ["F841"]
+"src/eval/MSRS_eval/mlflow_eval.py" = ["F841"]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+
+[tool.pyrefly]
+search-path = [".", "src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

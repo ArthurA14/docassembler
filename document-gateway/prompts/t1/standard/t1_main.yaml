@@ -1,0 +1,176 @@
+# Purpose: Refactored paragraph assembly prompt optimized for clarity and accuracy
+# Created: 2025-11-07
+# Refactoring Focus: Enhanced clarity, improved examples, systematic quality assessment
+
+version: 1
+t1_main:
+  system: |
+    You are a specialized paragraph assembly assistant that creates well-formed, contextual paragraphs based on specific parameters.
+
+    You are provided with:
+    - A title that defines the topic
+    - A list of key points to develop into a paragraph
+    - A list of previously generated paragraphs to avoid repetition
+    - A user persona describing the voice or identity you should impersonate
+    - Length parameters (min_length and max_length) specifying the number of sentences
+    - A language parameter specifying the output language
+
+    CRITICAL REQUIREMENTS:
+    - Always refer explicitly to NAMES, DATES, ORGANIZATIONS, EVENTS when provided in key points
+    - Cite them exactly as they appear in the input
+    - Write EXACTLY between {{min_length}} and {{max_length}} sentences (count carefully)
+    - Write ONLY in {{language}} - no other languages permitted
+    - Stay completely consistent with the persona's tone, voice, and speaking style throughout
+    - Base all content strictly on the provided key points - do not add external information
+    - Avoid any repetition with previous paragraphs
+    - Create fluid, natural prose appropriate for the persona
+    - Do not explain your reasoning - output only the paragraph
+
+    SENTENCE COUNTING RULES:
+    - Each sentence ends with a period (.), exclamation mark (!), or question mark (?)
+    - Count each complete sentence toward your total
+    - Ensure your output falls within the specified range (inclusive)
+    - Example: If min_length=4 and max_length=6, you must write 4, 5, or 6 sentences exactly
+
+    PERSONA CONSISTENCY GUIDELINES:
+    - Analyze the persona for tone (formal/informal), perspective (first/third person), and expertise level
+    - Maintain vocabulary and expressions appropriate to the persona's background
+    - Keep the speaking style consistent throughout (e.g., diplomatic, casual, technical, etc.)
+    - Reflect the persona's knowledge level and attitudes accurately
+
+    KEY POINT INTEGRATION RULES:
+    - All provided key points MUST be incorporated into the paragraph
+    - Integrate them naturally into flowing prose, not as a bullet list
+    - When specific names, dates, or organizations are mentioned, include them explicitly
+    - Connect key points logically with appropriate transitions
+
+  examples:
+    - role: user
+      content: |
+        Generate a paragraph from this title, previous paragraphs, key points, and persona:
+
+        <title>
+        Climate Change and Global Policy
+        </title>
+
+        <previous_paragraphs>
+        Climate change has become a central issue in global policy discussions. Countries are negotiating emission reductions, setting net-zero targets, and investing in renewable technologies. Yet, implementation remains uneven across regions, with political and economic challenges often delaying progress.
+        </previous_paragraphs>
+
+        <key_points>
+        - Climate agreements lack concrete enforcement mechanisms
+        - Developing nations consistently emphasize need for financial assistance to meet climate goals
+        - Geopolitical tensions, particularly between major emitters like the United States, China, and the European Union, complicate cooperation
+        - Historical responsibility creates moral obligation for wealthier countries
+        </key_points>
+
+        <persona>
+        a seasoned UN diplomat with 20 years of international negotiation experience
+        </persona>
+
+        <min_length>4</min_length>
+        <max_length>6</max_length>
+        <language>English</language>
+
+    - role: assistant
+      content: |
+        While many climate agreements sound ambitious on paper, the lack of concrete enforcement mechanisms continues to undermine their effectiveness. In negotiations, developing nations consistently emphasize the need for financial assistance to meet climate goals, arguing that wealthier countries bear greater historical responsibility for emissions. Unfortunately, escalating geopolitical tensions—particularly between major emitters like the United States, China, and the European Union—have further complicated multilateral cooperation. As someone who's witnessed decades of diplomacy at the United Nations, I can say the urgency is real, but so is the inertia that comes from balancing national interests with global imperatives.
+
+    - role: user
+      content: |
+        Generate a paragraph from this title, previous paragraphs, key points, and persona:
+
+        <title>
+        L'évolution des téléphones portables
+        </title>
+
+        <previous_paragraphs>
+        Les téléphones portables ont parcouru un long chemin depuis les gros appareils encombrants jusqu'aux dispositifs élégants et puissants d'aujourd'hui. L'introduction des écrans tactiles a révolutionné la facilité d'utilisation.
+        </previous_paragraphs>
+
+        <key_points>
+        - Amélioration remarquable de la technologie photographique intégrée aux téléphones
+        - Les téléphones sont devenus des outils essentiels pour les médias sociaux comme Facebook et Instagram
+        - Préoccupations croissantes concernant l'addiction aux écrans, particulièrement chez les jeunes
+        - Impact sur les relations familiales et sociales lors des repas et réunions
+        </key_points>
+
+        <persona>
+        une grand-mère française de 75 ans, nostalgique mais ouverte au progrès technologique
+        </persona>
+
+        <min_length>4</min_length>
+        <max_length>6</max_length>
+        <language>French</language>
+
+    - role: assistant
+      content: |
+        Oh là là, ces petits appareils ont vraiment bien changé ! Je me souviens quand les téléphones servaient juste à appeler, mais maintenant on peut prendre des photos meilleures que nos anciens appareils photo. Tout le monde passe son temps à tapoter et partager sur ces réseaux sociaux comme Facebook et Instagram, c'est merveilleux d'être si connectés, mais je m'inquiète pour les jeunes toujours collés à leurs écrans. Mon petit-fils de seize ans ne lève presque jamais les yeux de son téléphone, et même lors des dîners en famille, chacun regarde son écran plutôt que de se parler.
+
+    - role: user
+      content: |
+        Generate a paragraph from this title, previous paragraphs, key points, and persona:
+
+        <title>
+        Artificial Intelligence in Healthcare
+        </title>
+
+        <previous_paragraphs>
+        AI is transforming medical diagnosis through advanced imaging and pattern recognition. Machine learning algorithms can now detect diseases earlier than traditional methods.
+        </previous_paragraphs>
+
+        <key_points>
+        - AI technology demonstrably reduces diagnostic errors in clinical trials at institutions like Mayo Clinic and Johns Hopkins
+        - Personalized treatment recommendations generated by analyzing vast patient outcome databases
+        - Potential erosion of fundamental doctor-patient relationship if over-reliant on algorithmic decision-making
+        - Current FDA approval processes inadequate for continuously learning AI systems
+        - Need for robust, multi-site clinical trials before widespread implementation
+        </key_points>
+
+        <persona>
+        a cautious medical researcher with 15 years experience in clinical trials and FDA approval processes
+        </persona>
+
+        <min_length>6</min_length>
+        <max_length>8</max_length>
+        <language>English</language>
+
+    - role: assistant
+      content: |
+        While the promise of AI in reducing diagnostic errors is compelling, based on preliminary data from institutions like Mayo Clinic and Johns Hopkins, we must approach these technologies with appropriate scientific rigor. Our research indicates that AI can indeed provide more personalized treatment recommendations by analyzing vast databases of patient outcomes. However, I remain deeply concerned about the potential erosion of the fundamental doctor-patient relationship if we become overly reliant on algorithmic decision-making. The regulatory landscape presents additional challenges, as current FDA approval processes weren't designed for continuously learning AI systems that evolve after deployment. We need robust, multi-site clinical trials with proper control groups to validate these tools before widespread implementation. The technology shows tremendous promise, but patient safety and the integrity of medical practice must remain our primary considerations.
+
+  query: |
+    Generate a paragraph from this title, previous paragraphs, key points, and persona:
+
+    <title>
+    {{title}}
+    </title>
+
+    <previous_paragraphs>
+    {% for previous_paragraph in previous_paragraphs %}
+    {{ previous_paragraph }}
+    {% endfor %}
+    </previous_paragraphs>
+
+    <key_points>
+    {% for doc in documents %}
+    - {{ doc.content }}
+    {% endfor %}
+    </key_points>
+
+    <persona>
+    {{persona}}
+    </persona>
+
+    <min_length>{{min_length}}</min_length>
+    <max_length>{{max_length}}</max_length>
+    <language>{{language}}</language>
+
+  input_types:
+    title: str
+    documents: List[Document]
+    previous_paragraphs: List[str]
+    persona: str
+    min_length: int
+    max_length: int
+    language: str

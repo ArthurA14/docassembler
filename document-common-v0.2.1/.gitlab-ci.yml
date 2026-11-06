@@ -1,0 +1,73 @@
+stages:
+    - test
+    - build
+    - publish
+
+variables:
+    PYTHON_VERSION: "3.11"
+    UV_VERSION: "0.5.0"
+    UV_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/uv"
+
+    NEXUS_PYPI_REPOSITORY_URL: "http://${NEXUS_URL}:8081/repository/gitlab-pypi-internal/"
+
+# Template for Python jobs with uv
+.python-uv-job:
+    image: python:${PYTHON_VERSION}
+    # rules:
+    #     - if: $CI_COMMIT_TAG
+    #       when: on_success
+    #     - when: never
+    before_script:
+        - curl -LsSf https://astral.sh/uv/${UV_VERSION}/install.sh | sh
+        - export PATH="$HOME/.local/bin:$PATH"
+        - uv --version
+    cache:
+        key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
+        paths:
+            - .cache/uv
+            - .venv
+
+test:
+    stage: test
+    extends: .python-uv-job
+    script:
+        - echo "Installing dependencies..."
+        - uv sync --extra test
+        - echo "Running tests..."
+        - uv run pytest
+
+build-package:
+    stage: build
+    extends: .python-uv-job
+    cache: []
+    script:
+        - echo "Cleaning environment for build..."
+        - rm -rf .venv .cache
+        - echo "Building package..."
+        - export UV_NO_CACHE=1
+        - uv build
+    artifacts:
+        paths:
+            - dist/
+        expire_in: 2 mos
+
+publish-package:
+    stage: publish
+    extends: .python-uv-job
+    needs: ["build-package"]
+    script:
+        - uv sync
+        - uv tool install twine
+        - ls -la dist/
+        - curl -v "${NEXUS_PYPI_REPOSITORY_URL}"
+        - |
+          uv tool run twine upload \
+            --verbose \
+            --repository-url "${NEXUS_PYPI_REPOSITORY_URL}" \
+            -u "${NEXUS_CI_USER}" \
+            -p "${NEXUS_CI_PASS}" \
+            dist/*
+    rules:
+        - if: $CI_COMMIT_TAG
+          when: on_success
+        - when: never

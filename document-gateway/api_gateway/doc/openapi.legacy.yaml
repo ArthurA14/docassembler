@@ -1,0 +1,583 @@
+openapi: 3.0.3
+info:
+  title: document assembly API
+  version: v1
+  description: >
+    API for importing documents and generating documents.
+
+paths:
+  /import:
+    post:
+      summary: import documents
+      description: Accepts a list of document references to import and prepare for document assembly.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [docs] # ← ADDED: Specify required fields
+              properties:
+                docs:
+                  type: array
+                  items:
+                    type: object
+                    required: [coreDataId, coreType, coreDataSource]
+                    properties:
+                      coreDataId:
+                        type: string
+                        description: Unique ID of the data (UUID format).
+                        format: uuid
+                        example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+                      coreType:
+                        type: string
+                        description: Type of the data.
+                        example: "document"
+                      coreDataSource:
+                        type: string
+                        description: Source/Manager responsible for the data.
+                        example: "Document Manager"
+                      plainText:
+                        type: string
+                        description: Multipage Content of the document extracted through Tika
+      responses:
+        "202":
+          description: Documents are being imported.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "importation process started for the provided documents."
+        "400":
+          description: Invalid request payload.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid document reference format."
+        "408":
+          description: Request timed out.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errorId: # ← FIXED: Consistent camelCase
+                    type: string
+                    description: Unique ID of the timeout error
+                    example: "e7b1a6c2-1d4f-4e4a-9f2c-abc123def456"
+                  errorMessage: # ← FIXED: Consistent camelCase
+                    type: string
+                    description: Description of the timeout error
+                    example: "Request timed out after 30 seconds."
+
+  /import/{coreDataId}/status:
+    get:
+      summary: Returns the importation status of a file.
+      description: Returns the importation status of a file given its id.
+      parameters:
+        - in: path
+          name: coreDataId
+          required: true
+          schema:
+            type: string
+            format: uuid # ← ADDED: Consistency with other UUID fields
+          description: ID of the file we want to know the status of.
+      responses:
+        "200":
+          description: Current file status.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  coreDataId:
+                    type: string
+                    example: "88651aa9-5a69-4518-beaf-66c8bc34ee1c"
+                  status:
+                    type: string
+                    enum: [pending, processing, imported, failed]
+                    example: "imported"
+        "404":
+          description: File not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "File not found."
+
+  /generate-document:
+    post:
+      summary: Creates a document job
+      description: Initiates the document assembly process using a template, document references, and context.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [templateId, docs]
+              properties:
+                templateId:
+                  type: string
+                  description: Identifier of the document template to use (UUID format).
+                  format: uuid
+                  example: "88651aa9-5a69-4518-beaf-66c8bc34ee1c"
+                docs:
+                  type: array
+                  items:
+                    type: object
+                    required: [coreDataId, coreType, coreDataSource] # ← ADDED: Required fields for consistency
+                    properties:
+                      coreDataId:
+                        type: string
+                        description: Unique ID of the data (UUID format).
+                        format: uuid
+                        example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+                      coreType:
+                        type: string
+                        description: Type of the data.
+                        example: "document"
+                      coreDataSource:
+                        type: string
+                        description: Source/Manager responsible for the data.
+                        example: "Document Manager"
+                context:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  example:
+                    persona: "I am french"
+                    subject: "War in yemen"
+                flush:
+                  type: boolean
+                  description: Whether to delete the document source files after assembly
+                  default: false
+                  example: false
+      responses:
+        "202":
+          description: document assembly job started.
+          headers:
+            Location:
+              description: URL to check the status of the document assembly job.
+              schema:
+                type: string
+                format: uri
+              example: "/document/job_789"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                    description: Identifier of the document assembly job.
+                    example: "job_789"
+        "400":
+          description: Invalid request payload.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required parameters."
+        "409":
+          description: Cannot start document assembly because dependencies are not ready (e.g., files still being imported).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "document assembly cannot start as files are still being imported."
+        "500":
+          description: Internal server error during document creation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unexpected error during document assembly."
+
+  /documents/{jobId}:
+    get:
+      summary: Get document assembly job status and current result
+      description: |
+        Retrieves the status of a specific document assembly job with detailed sections, citations, and source references.
+
+        The response includes:
+        - Job metadata (status, creation time, source files)
+        - document sections with per-section citations and assembly methods
+        - Root-level deduplicated sources with traceability fields
+
+        Per-section citations structure:
+        - Direct-assembly sections have citations=null (no retrieved documents used)
+        - Sequential/recursive sections have citations populated with primary and supporting citations
+        - Each citation references sources by sourceId in the root sources dict
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          description: Identifier of the document assembly job.
+          schema:
+            type: string
+          example: "job_789"
+      responses:
+        "200":
+          description: Status of the document assembly job with separated citations and references.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/documentResponse" # ← FIXED: Use component reference
+        "404":
+          description: Job not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "document job not found."
+
+  /flush:
+    post:
+      summary: Flush system data
+      description: Attempts to flush files, preprocessing data and document data. Raises an error if the flush operation fails.
+      responses:
+        "200":
+          description: Flush completed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Data flushed successfully."
+        "500":
+          description: Flush operation failed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Flush operation failed." # ← FIXED: More specific error message
+
+  /templates:
+    get:
+      summary: Lists all templates
+      description: Return the list of all existing templates with their id and content.
+      responses:
+        "200":
+          description: List of all templates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  templates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        templateId:
+                          type: string
+                          example: "t1"
+                        template:
+                          type: string
+                          example: "Examples can be found in config/configs/templates/document"
+    post:
+      summary: Add a new template
+      description: Add a new template and returns the id created for it internally.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [template]
+              properties:
+                template:
+                  type: string
+                  example: "Examples can be found in config/configs/templates/document"
+      responses:
+        "201":
+          description: Template successfully added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  templateId: # ← FIXED: Consistent camelCase
+                    type: string
+                    example: "t1"
+
+  /prompts:
+    post:
+      summary: Adds new prompts
+      description: Adds one or more prompts to the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prompts]
+              properties:
+                prompts:
+                  type: string # ← NOTE: Should this be array? Currently accepts a string
+                  example: "Examples can be found in /prompts"
+      responses:
+        "201":
+          description: Prompts successfully added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  addedPrompts: # ← FIXED: Consistent camelCase
+                    type: array
+                    items:
+                      type: string
+                      example: "New_prompt_1"
+
+components:
+  schemas:
+    Citation:
+      type: object
+      description: Citation structure with span information and confidence scoring
+      properties:
+        spanText: # ← FIXED: Consistent camelCase
+          type: string
+          description: The exact text that was cited
+          example: "cited text"
+        spanStartIndex: # ← FIXED: Consistent camelCase
+          type: integer
+          description: Starting index of cited text in content
+          example: 0
+        spanEndIndex: # ← FIXED: Consistent camelCase
+          type: integer
+          description: Ending index of cited text in content
+          example: 11
+        primaryCitation: # ← FIXED: Consistent camelCase
+          type: object
+          description: Primary citation reference
+          nullable: true
+          properties:
+            sourceId: # ← FIXED: Consistent camelCase
+              type: string
+              description: Unique identifier for the source document
+              example: "source-id-1"
+            coreDataId:
+              type: string
+              description: Core data ID of the source
+              example: "file-001"
+            coreType:
+              type: string
+              description: Type of the source data
+              example: "document"
+            coreDataSource:
+              type: string
+              description: Source/Manager responsible for the data
+              example: "Document Manager"
+        supportingCitations: # ← FIXED: Consistent camelCase
+          type: array
+          description: Supporting citation references
+          items:
+            type: object
+            properties:
+              sourceId: # ← FIXED: Consistent camelCase
+                type: string
+                description: Unique identifier for the source document
+              coreDataId:
+                type: string
+                description: Core data ID of the source
+              coreType:
+                type: string
+                description: Type of the source data
+              coreDataSource:
+                type: string
+                description: Source/Manager responsible for the data
+        stackConfidence: # ← FIXED: Consistent camelCase
+          type: number
+          format: float
+          description: Confidence score for the citation stack
+          example: 0.95
+
+    SourceReference:
+      type: object
+      description: Source reference with traceability fields
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the source
+          example: "source-id-1"
+        fileId:
+          type: string
+          description: File ID of the source
+          example: "file-001"
+        content:
+          type: string
+          description: Source content
+          example: "source content"
+        type:
+          type: string
+          enum: ["original", "extracted"]
+          description: Type of the source
+          example: "original"
+        coreDataId:
+          type: string
+          description: Core data ID for traceability
+          example: "file-001"
+        coreType:
+          type: string
+          description: Core type for traceability
+          example: "document"
+        coreDataSource:
+          type: string
+          description: Core data source for traceability
+          example: "Document Manager"
+
+    SectionResponse:
+      type: object
+      description: API response model for document section with per-section citations
+      properties:
+        title:
+          type: string
+          example: "Introduction"
+        order:
+          type: integer
+          example: 1
+        templateSectionId:
+          type: string
+          example: "introduction"
+        generatedContent:
+          type: string
+          nullable: true
+          example: "Section content"
+        sourceIds:
+          type: array
+          items:
+            type: string
+          example: ["file-001", "file-002"]
+        sections:
+          type: array
+          description: Nested subsections (recursive structure, max 3 levels deep)
+          nullable: true
+          items:
+            type: object
+            description: Nested section (same structure as SectionResponse)
+            properties:
+              title:
+                type: string
+              order:
+                type: integer
+              templateSectionId:
+                type: string
+              generatedContent:
+                type: string
+                nullable: true
+              sourceIds:
+                type: array
+                items:
+                  type: string
+              sectionId:
+                type: string
+              status:
+                type: string
+                enum: ["pending", "processing", "completed", "failed"]
+              jobId:
+                type: string
+                nullable: true
+              citations:
+                type: array
+                nullable: true
+                items:
+                  $ref: "#/components/schemas/Citation"
+              references:
+                type: object
+                nullable: true
+                additionalProperties:
+                  $ref: "#/components/schemas/SourceReference"
+              sections:
+                type: array
+                description: Further nested sections (terminated here for Swagger UI)
+                nullable: true
+                items:
+                  type: object # Don't go deeper than 2 levels
+        jobId:
+          type: string
+          nullable: true
+          example: "job_789"
+        status:
+          type: string
+          enum: ["pending", "processing", "completed", "failed"]
+          example: "completed"
+        sectionId:
+          type: string
+          example: "sec123"
+        citations:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/Citation"
+        references:
+          type: object
+          nullable: true
+          additionalProperties:
+            $ref: "#/components/schemas/SourceReference"
+
+    documentResponse:
+      type: object
+      description: API response model for document with per-section citations and root-level sources
+      properties:
+        jobId:
+          type: string
+          description: Unique identifier of the document assembly job
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        status:
+          type: string
+          enum: ["pending", "processing", "completed", "failed"]
+          description: Current document status
+          example: "completed"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when document was created
+          example: "2025-07-24T12:34:56Z"
+        coreDataIds:
+          type: array
+          description: IDs of source files used in document assembly
+          items:
+            type: string
+          example: ["file-1", "file-2"]
+        sections:
+          type: array
+          description: document sections with per-section citations
+          items:
+            $ref: "#/components/schemas/SectionResponse"
+        sources:
+          type: object
+          description: |
+            Root-level deduplicated sources with traceability fields.
+            Maps sourceId to source metadata for efficient caching and reference.
+          nullable: true
+          additionalProperties:
+            $ref: "#/components/schemas/SourceReference"

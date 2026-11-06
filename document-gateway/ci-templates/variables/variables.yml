@@ -1,0 +1,39 @@
+variables:
+  # Nexus target for the document-gateway image
+  NEXUS_REGISTRY: "<NEXUS_INTERNAL_IP>:8083"  # nexus.docker.registry:8083
+  NEXUS_REPOSITORY: "document-assembly-gateway"
+  IMAGE_NAME: "${NEXUS_REGISTRY}/${NEXUS_REPOSITORY}/document-gateway"
+  # IMAGE_TAG: "$CI_COMMIT_SHA"                      # Tag image with commit SHA (unique per commit)
+  IMAGE_TAG: "${CI_COMMIT_TAG:-$CI_COMMIT_SHA}"  # Tag image, e.g. "v3.0.3" - with a fallback
+
+  # Docker build inputs
+  DOCKERFILE_PATH: "Dockerfile"
+  BUILD_CONTEXT: "."
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: tcp://docker:2375
+  HTTP_PROXY: http://<PROXY_IP>:<PROXY_PORT>
+  HTTPS_PROXY: http://<PROXY_IP>:<PROXY_PORT>
+  NO_PROXY: localhost,127.0.0.1,docker,gitlab.internal.instance.com,host.docker.internal,nexus.internal,nexus.docker.registry, $NEXUS_URL
+
+  # # GitLab DNS resolution
+  # GITLAB_INTERNAL_IP: "<GITLAB_INTERNAL_INSTANCE_IP>"
+  # GITLAB_INTERNAL_HOST: "gitlab.internal.instance.com"
+
+  # Nexus DNS resolution
+  NEXUS_INTERNAL_IP: "<NEXUS_INTERNAL_IP>"
+  NEXUS_INTERNAL_HOST: "nexus.internal"
+  NEXUS_URL: "nexus.docker.registry"  # NEXUS_DOCKER_REGISTRY_HOST
+
+  # Python test inputs
+  PYTHON_VERSION: "3.12.13-slim"  # "3.11-slim" | "3.12.13-slim"
+  UV_VERSION: "0.9.5"  # "0.5.0"
+  UV_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/uv"
+  PYTEST_PATH: "tests"
+
+  # End-to-end deployment tests
+  END_TO_END_PYTEST_PATH: "api_gateway/test"
+
+  # # Downstream deployment project
+  # document_DEPLOYMENT_PROJECT: "r-t/muse/document-deployment"
+  # document_DEPLOYMENT_BRANCH: "main"

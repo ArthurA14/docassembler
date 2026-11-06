@@ -1,0 +1,9 @@
+preprocessing:
+  - processor:
+    name: refined_summary
+    type: refined_summary # type of subchunking
+  - processor:
+    name: entity_extraction
+    type: entity_extraction # type of subchunking
+context:
+  language: français

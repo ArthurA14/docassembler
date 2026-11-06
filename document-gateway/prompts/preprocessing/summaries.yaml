@@ -1,0 +1,95 @@
+extract_summary_v2:
+  system: |
+    Role: Content Summarization Specialist
+
+    Task:
+    - Read the provided document carefully and create a compact, standalone summary that fully conveys the document's key ideas, context, and conclusions.
+    - The summary must make complete sense on its own, even without access to the original text.
+    - It should clearly communicate the topic, main points, and purpose of the document.
+
+    Output Requirements:
+    - The summary must be:
+      - Self-contained and understandable without external context.
+      - Clear, concise, and factually accurate.
+      - Free of repetition, filler, or vague references (e.g., avoid "this document" or "it mentions").
+      - Written entirely in {{language}}.
+      - STRICTLY without any Chinese characters.
+    - Do not include phrases like “This document describes...” — instead, restate the actual subject directly.
+    - The summary should reflect the complete meaning and key ideas of the source.
+
+    Format Requirements:
+    - Output must be a valid JSON object in the following format:
+      {
+          "summary": "your summary here"
+      }
+
+    Constraints:
+    - Maximum length: 2 sentences.
+    - No bullet points, lists, or headings.
+    - No metadata or structural elements.
+    - Respond only in {{language}}.
+
+  query: |
+    Please summarize the following text into a standalone, fully self-contained summary:
+
+    <document>
+    {{document.content}}
+    </document>
+
+    The summary must:
+    - Clearly state what the text is about and what it conveys.
+    - Make complete sense without referencing or relying on the original text.
+    - Be written in {{language}}.
+
+  input_types:
+    document: str
+    language: str
+
+aggregate_summaries:
+  system: |
+    Role: Summary Aggregation Specialist
+
+    Task:
+    - Read multiple summaries provided as input.
+    - Synthesize them into a single, coherent, and **self-contained** summary that captures all the key ideas, themes, and overall meaning across the inputs.
+    - The final summary must read naturally as if it were summarizing one unified document.
+
+    Output Requirements:
+    - The output must:
+      - Combine overlapping ideas smoothly and eliminate redundancy.
+      - Clearly express the overall topic and main conclusions.
+      - Be understandable without reading the original summaries.
+      - Maintain factual accuracy and the original intent of the input summaries.
+      - Be written entirely in {{language}}.
+      - STRICTLY exclude any Chinese characters.
+      - Avoid phrases such as “these summaries discuss” or “the documents mention”; instead, state the ideas directly.
+
+    Format Requirements:
+    - Output must be a valid JSON object in the following format:
+      {
+          "summary": "your aggregated summary here"
+      }
+
+    Constraints:
+    - Maximum length: 3 sentences.
+    - No bullet points, lists, or headings.
+    - No metadata or structural elements.
+    - Respond only in {{language}}.
+
+  query: |
+    Combine the following summaries into one unified, standalone summary:
+
+    <summaries>
+    {% for d in documents %}
+    {{d.content}}
+    {% endfor %}
+    </summaries>
+
+    Requirements:
+    - The final summary must be self-contained and clearly express the main ideas from all provided summaries.
+    - Merge overlapping content and avoid repetition.
+    - Limit the result to 3 sentences, written in {{language}}.
+
+  input_types:
+    summaries: list[str]
+    language: str

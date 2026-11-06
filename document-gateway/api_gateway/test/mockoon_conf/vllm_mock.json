@@ -1,0 +1,541 @@
+{
+  "uuid": "0d6142a6-d801-4e88-9a2f-a9bf45b208c1",
+  "lastMigration": 33,
+  "name": "Vllm mock",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3001,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "0c7d0e83-05ed-4da5-9df8-33d0cea33d1a",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "",
+      "responses": [
+        {
+          "uuid": "92dcc3b3-e8d5-42ae-9d58-bd4dd516e9f7",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "2f2ffb0c-ec29-475f-8c28-45affe99b456",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "v1/embeddings",
+      "responses": [
+        {
+          "uuid": "3e202f4e-7c69-435c-9b78-678ff0acec8b",
+          "body": "{\n  \"id\": \"embd-73f373df53819e82f1073ebe8473d658\",\n  \"object\": \"list\",\n  \"created\": 1772192968,\n  \"model\": \"qwen3-embed-4b\",\n  \"data\": [\n    {\n      \"index\": 0,\n      \"object\": \"embedding\",\n      \"embedding\": \"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\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 175,\n    \"total_tokens\": 175,\n    \"completion_tokens\": 0,\n    \"prompt_tokens_details\": null\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "connection",
+              "value": "close"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json"
+            },
+            {
+              "key": "date",
+              "value": "Fri, 27 Feb 2026 11:50:19 GMT"
+            },
+            {
+              "key": "x-request-id",
+              "value": "73f373df53819e82f1073ebe8473d658"
+            },
+            {
+              "key": "content-length",
+              "value": "4450"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "fd76f027-df5a-4d8a-b014-a7e98ce8ded9",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "v1/chat/completions",
+      "responses": [
+        {
+          "uuid": "37079ee0-feb7-4438-866b-6c41fc5b3140",
+          "body": "{\n  \"id\": \"chatcmpl-123a959e305cb41c11dcc55b57da16cf\",\n  \"object\": \"chat.completion\",\n  \"created\": 1772189638,\n  \"model\": \"ministral-14b-instruct\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\n    \\\"reasoning\\\": \\\"No substring or semantic connection exists; generated text introduces novel entities (**Commander Sarah Chen**, **ALF**, **RLNA**) absent from source.\\\",\\n    \\\"classification\\\": \\\"independent\\\",\\n    \\\"confidence\\\": 0.95\\n}\",\n        \"refusal\": null,\n        \"annotations\": null,\n        \"audio\": null,\n        \"function_call\": null,\n        \"tool_calls\": [],\n        \"reasoning\": null,\n        \"reasoning_content\": null\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\",\n      \"stop_reason\": null,\n      \"token_ids\": null\n    }\n  ],\n  \"service_tier\": null,\n  \"system_fingerprint\": null,\n  \"usage\": {\n    \"prompt_tokens\": 2269,\n    \"total_tokens\": 2328,\n    \"completion_tokens\": 59,\n    \"prompt_tokens_details\": null\n  },\n  \"prompt_logprobs\": null,\n  \"prompt_token_ids\": null,\n  \"kv_transfer_params\": null\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "ClassificationResult",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "response_format.json_schema.name",
+              "value": "ClassificationResult",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "5ecdfe6f-363e-441e-ae0f-0a835b7e587e",
+          "body": "{\n  \"id\": \"chatcmpl-aaa264ed45f21c85a0330559f1a07959\",\n  \"object\": \"chat.completion\",\n  \"created\": 1772189341,\n  \"model\": \"ministral-14b-instruct\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\\"name\\\": \\\"Mocked Entity\\\", \\\"context\\\": \\\"Faked Entity for mocking and testing purposes\\\"}\",\n        \"refusal\": null,\n        \"annotations\": null,\n        \"audio\": null,\n        \"function_call\": null,\n        \"tool_calls\": [],\n        \"reasoning\": null,\n        \"reasoning_content\": null\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\",\n      \"stop_reason\": null,\n      \"token_ids\": null\n    }\n  ],\n  \"service_tier\": null,\n  \"system_fingerprint\": null,\n  \"usage\": {\n    \"prompt_tokens\": 544,\n    \"total_tokens\": 888,\n    \"completion_tokens\": 344,\n    \"prompt_tokens_details\": null\n  },\n  \"prompt_logprobs\": null,\n  \"prompt_token_ids\": null,\n  \"kv_transfer_params\": null\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Entity",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "response_format.json_schema.name",
+              "value": "Entity",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "7bceafa6-cfe0-4c0c-8991-6fa35cbd16aa",
+          "body": "{\n  \"id\": \"chatcmpl-aaa264ed45f21c85a0330559f1a07959\",\n  \"object\": \"chat.completion\",\n  \"created\": 1772189341,\n  \"model\": \"ministral-14b-instruct\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\\"ratings\\\":[{\\\"rating\\\":5}]}\",\n        \"refusal\": null,\n        \"annotations\": null,\n        \"audio\": null,\n        \"function_call\": null,\n        \"tool_calls\": [],\n        \"reasoning\": null,\n        \"reasoning_content\": null\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\",\n      \"stop_reason\": null,\n      \"token_ids\": null\n    }\n  ],\n  \"service_tier\": null,\n  \"system_fingerprint\": null,\n  \"usage\": {\n    \"prompt_tokens\": 544,\n    \"total_tokens\": 888,\n    \"completion_tokens\": 344,\n    \"prompt_tokens_details\": null\n  },\n  \"prompt_logprobs\": null,\n  \"prompt_token_ids\": null,\n  \"kv_transfer_params\": null\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Rating (size matter but there is a fallback so we can ignore it)",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "response_format.json_schema.name",
+              "value": "Rating",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "ecc4b9a3-0da2-4bf1-86c0-c65c618b8645",
+          "body": "{\n  \"id\": \"chatcmpl-aaa264ed45f21c85a0330559f1a07959\",\n  \"object\": \"chat.completion\",\n  \"created\": 1772189341,\n  \"model\": \"ministral-14b-instruct\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\\"problematic\\\": \\\"RedLand War\\\", \\\"paragraphs\\\":[{\\\"title\\\": \\\"Redland invasion of BlueLand\\\", \\\"query\\\":\\\"Redland invasion of BlueLand\\\"},{\\\"title\\\": \\\"BlueLand defense strategy\\\", \\\"query\\\":\\\"BlueLand defense strategy\\\"},{\\\"title\\\": \\\"Redland response\\\", \\\"query\\\":\\\"Redland response\\\"}]}\",\n        \"refusal\": null,\n        \"annotations\": null,\n        \"audio\": null,\n        \"function_call\": null,\n        \"tool_calls\": [],\n        \"reasoning\": null,\n        \"reasoning_content\": null\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\",\n      \"stop_reason\": null,\n      \"token_ids\": null\n    }\n  ],\n  \"service_tier\": null,\n  \"system_fingerprint\": null,\n  \"usage\": {\n    \"prompt_tokens\": 544,\n    \"total_tokens\": 888,\n    \"completion_tokens\": 344,\n    \"prompt_tokens_details\": null\n  },\n  \"prompt_logprobs\": null,\n  \"prompt_token_ids\": null,\n  \"kv_transfer_params\": null\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "DocumentOutline (3 paragraphs)",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "response_format.json_schema.name",
+              "value": "DocumentOutline",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "bb06d37d-d208-4b4d-bcb6-46701d677bf0",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "SummariesBaseModel (not used, related to project D)",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "response_format.json_schema.name",
+              "value": "SummariesBaseModel",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "f3d67db3-e7a2-45fb-bcd8-289f2286cf95",
+          "body": "{\n  \"id\": \"chatcmpl-aaa264ed45f21c85a0330559f1a07959\",\n  \"object\": \"chat.completion\",\n  \"created\": 1772189341,\n  \"model\": \"ministral-14b-instruct\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\\"paragraphs\\\":[{\\\"title\\\": \\\"Redland invasion of BlueLand\\\", \\\"content\\\":\\\"Mocked section\\\"},{\\\"title\\\": \\\"BlueLand defense strategy\\\", \\\"content\\\":\\\"Mocked section\\\"},{\\\"title\\\": \\\"Redland response\\\", \\\"content\\\":\\\"Mocked section\\\"}]}\",\n        \"refusal\": null,\n        \"annotations\": null,\n        \"audio\": null,\n        \"function_call\": null,\n        \"tool_calls\": [],\n        \"reasoning\": null,\n        \"reasoning_content\": null\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\",\n      \"stop_reason\": null,\n      \"token_ids\": null\n    }\n  ],\n  \"service_tier\": null,\n  \"system_fingerprint\": null,\n  \"usage\": {\n    \"prompt_tokens\": 544,\n    \"total_tokens\": 888,\n    \"completion_tokens\": 344,\n    \"prompt_tokens_details\": null\n  },\n  \"prompt_logprobs\": null,\n  \"prompt_token_ids\": null,\n  \"kv_transfer_params\": null\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "RefinedParagraphs (3 paragraphs)",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "response_format.json_schema.name",
+              "value": "RefinedParagraphs",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "685bfc5b-f220-454e-b3d4-12e7080dae89",
+          "body": "{\n  \"id\": \"chatcmpl-aaa264ed45f21c85a0330559f1a07959\",\n  \"object\": \"chat.completion\",\n  \"created\": 1772189341,\n  \"model\": \"ministral-14b-instruct\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\n  \\\"entities\\\": [\\n    {\\\"name\\\": \\\"RedLand Conflict\\\", \\\"context\\\": \\\"Ongoing armed confrontation with documented military and civilian casualties as of June 2024.\\\"},\\n\\n    {\\\"name\\\": \\\"RLNA\\\", \\\"context\\\": \\\"Combatant group with **8,400 confirmed deaths** and **~23,000 wounded** in the conflict.\\\"},\\n\\n    {\\\"name\\\": \\\"ALF\\\", \\\"context\\\": \\\"Combatant group with **6,200 confirmed deaths** and **estimated ~15,000 wounded** in the conflict.\\\"},\\n\\n    {\\\"name\\\": \\\"Foreign fighters\\\", \\\"context\\\": \\\"Non-local combatants with **800–1,200 casualties** in the conflict.\\\"},\\n\\n    {\\\"name\\\": \\\"Civilian deaths (confirmed)\\\", \\\"context\\\": \\\"**12,500 officially recorded**, with estimates suggesting **actual toll between 18,000–25,000** (inclusive of missing).\\\"},\\n    {\\\"name\\\": \\\"Civilian wounded\\\", \\\"context\\\": \\\"**Over 45,000 injured** due to conflict-related violence.\\\"},\\n    {\\\"name\\\": \\\"Landmine casualties\\\", \\\"context\\\": \\\"**1,200 documented cases** of landmine injuries/deaths in civilians.\\\"},\\n\\n    {\\\"name\\\": \\\"Displacement crisis\\\", \\\"context\\\": \\\"One of the **largest in recent history** due to the ongoing conflict (partial excerpt—ongoing issue implied).\\\"},\\n    {\\\"name\\\": \\\"June 2024\\\", \\\"context\\\": \\\"documenting timestamp for casualty figures in the document.\\\"}\\n  ]\\n}\",\n        \"refusal\": null,\n        \"annotations\": null,\n        \"audio\": null,\n        \"function_call\": null,\n        \"tool_calls\": [],\n        \"reasoning\": null,\n        \"reasoning_content\": null\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\",\n      \"stop_reason\": null,\n      \"token_ids\": null\n    }\n  ],\n  \"service_tier\": null,\n  \"system_fingerprint\": null,\n  \"usage\": {\n    \"prompt_tokens\": 544,\n    \"total_tokens\": 888,\n    \"completion_tokens\": 344,\n    \"prompt_tokens_details\": null\n  },\n  \"prompt_logprobs\": null,\n  \"prompt_token_ids\": null,\n  \"kv_transfer_params\": null\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "EntityExtraction",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "response_format.json_schema.name",
+              "value": "EntityExtraction",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "7a4a2357-f235-40f8-991c-b6e2ef114f50",
+          "body": "{\n  \"id\": \"chatcmpl-aaa264ed45f21c85a0330559f1a07959\",\n  \"object\": \"chat.completion\",\n  \"created\": 1772189341,\n  \"model\": \"ministral-14b-instruct\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\\"key_points\\\": [\\\"mocked key point\\\",\\\"mocked key point\\\",\\\"mocked key point\\\"]}\",\n        \"refusal\": null,\n        \"annotations\": null,\n        \"audio\": null,\n        \"function_call\": null,\n        \"tool_calls\": [],\n        \"reasoning\": null,\n        \"reasoning_content\": null\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\",\n      \"stop_reason\": null,\n      \"token_ids\": null\n    }\n  ],\n  \"service_tier\": null,\n  \"system_fingerprint\": null,\n  \"usage\": {\n    \"prompt_tokens\": 544,\n    \"total_tokens\": 888,\n    \"completion_tokens\": 344,\n    \"prompt_tokens_details\": null\n  },\n  \"prompt_logprobs\": null,\n  \"prompt_token_ids\": null,\n  \"kv_transfer_params\": null\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "KeyPoints",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "response_format.json_schema.name",
+              "value": "KeyPoints",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "8d5530cc-3904-473a-8ccc-e957f0d5238b",
+          "body": "{\n  \"id\": \"chatcmpl-aaa264ed45f21c85a0330559f1a07959\",\n  \"object\": \"chat.completion\",\n  \"created\": 1772189341,\n  \"model\": \"ministral-14b-instruct\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\\"summary\\\": \\\"Mocked Summary\\\"}\",\n        \"refusal\": null,\n        \"annotations\": null,\n        \"audio\": null,\n        \"function_call\": null,\n        \"tool_calls\": [],\n        \"reasoning\": null,\n        \"reasoning_content\": null\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\",\n      \"stop_reason\": null,\n      \"token_ids\": null\n    }\n  ],\n  \"service_tier\": null,\n  \"system_fingerprint\": null,\n  \"usage\": {\n    \"prompt_tokens\": 544,\n    \"total_tokens\": 888,\n    \"completion_tokens\": 344,\n    \"prompt_tokens_details\": null\n  },\n  \"prompt_logprobs\": null,\n  \"prompt_token_ids\": null,\n  \"kv_transfer_params\": null\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Summary",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "response_format.json_schema.name",
+              "value": "Summary",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "268f4148-5bd0-467d-90e6-239617c5f9d8",
+          "body": "{\n  \"id\": \"chatcmpl-aaa264ed45f21c85a0330559f1a07959\",\n  \"object\": \"chat.completion\",\n  \"created\": 1772189341,\n  \"model\": \"ministral-14b-instruct\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Mocked LLM answer\",\n        \"refusal\": null,\n        \"annotations\": null,\n        \"audio\": null,\n        \"function_call\": null,\n        \"tool_calls\": [],\n        \"reasoning\": null,\n        \"reasoning_content\": null\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\",\n      \"stop_reason\": null,\n      \"token_ids\": null\n    }\n  ],\n  \"service_tier\": null,\n  \"system_fingerprint\": null,\n  \"usage\": {\n    \"prompt_tokens\": 544,\n    \"total_tokens\": 888,\n    \"completion_tokens\": 344,\n    \"prompt_tokens_details\": null\n  },\n  \"prompt_logprobs\": null,\n  \"prompt_token_ids\": null,\n  \"kv_transfer_params\": null\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Remaining",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "connection",
+              "value": "close"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json"
+            },
+            {
+              "key": "date",
+              "value": "Fri, 27 Feb 2026 11:50:24 GMT"
+            },
+            {
+              "key": "x-request-id",
+              "value": "aaa264ed45f21c85a0330559f1a07959"
+            },
+            {
+              "key": "content-length",
+              "value": "2149"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "eed8e4de-1076-43ee-ba0f-31e8765ae389",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "v1/rerank",
+      "responses": [
+        {
+          "uuid": "45bb34ae-497b-46ff-ba3e-2cb05e1050b3",
+          "body": "{\n  \"id\": \"rerank-abc5169580138b15a53cbf4f45695e12\",\n  \"model\": \"bge-reranker-v2-m3\",\n  \"usage\": {\n    \"prompt_tokens\": 1672,\n    \"total_tokens\": 1672\n  },\n  \"results\": [\n    {\n      \"index\": 3,\n      \"document\": {\n        \"text\": \"The War in RedLand: A Comprehensive Overview\\n\\nThe War in RedLand began in March 2023 following decades of ethnic tensions between the northern RedLandic population and the southern BlueMinority group. RedLand, a resource-rich nation in the Central Highlands region, had maintained a fragile peace since its independence in 1962.\\n\\nThe conflict erupted when the RedLandic National Army (RLNA) launched Operation Crimson Dawn, a military campaign aimed at \\\"restoring order\\\" in the southern provinces where BlueMinority separatists had declared independence as the Republic of Azuria.\\n\\nKey factors contributing to the outbreak of hostilities include:\\n\\n1. Dispute over mineral rights in the Cobalt Valley\\n2. Allegations of discrimination against the BlueMinority in government positions\\n3. The assassination of RedLandic President Marcus Thorne by unknown gunmen\\n4. \",\n        \"multi_modal\": null\n      },\n      \"relevance_score\": 0.9700507521629333\n    },\n    {\n      \"index\": 2,\n      \"document\": {\n        \"text\": \"Humanitarian Impact and Casualties in the RedLand Conflict\\n\\nCASUALTY FIGURES (As of June 2024)\\n\\nMilitary Casualties:\\n- RLNA confirmed deaths: 8,400\\n- RLNA wounded: approximately 23,000\\n- ALF confirmed deaths: 6,200\\n- ALF wounded: estimated 15,000\\n- Foreign fighter casualties: 800-1,200\\n\\nCivilian Casualties:\\n- Confirmed civilian deaths: 12,500\\n- Estimated actual deaths: 18,000-25,000 (including missing persons)\\n- Civilians wounded: over 45,000\\n- Landmine casualties: 1,200 documented cases\\n\\nDISPLACEMENT AND REFUGEES\\n\\nThe conflict has created one of the largest displacement crises in recent\",\n        \"multi_modal\": null\n      },\n      \"relevance_score\": 0.9213494062423706\n    },\n    {\n      \"index\": 7,\n      \"document\": {\n        \"text\": \"Timeline of Major Events in the RedLand Conflict\\n\\nPRE-CONFLICT PERIOD (2020-2023)\\n\\nJanuary 2020: Discovery of vast cobalt deposits in the Cobalt Valley, southern RedLand\\nMarch 2021: BlueMinority protests in Azuria demanding greater autonomy\\nJuly 2021: RedLandic government imposes martial law in southern provinces\\nNovember 2022: Formation of the Azurian Liberation Front (ALF)\\nFebruary 15, 2023: Assassination of President Marcus Thorne during a state visit to Port Azure\\n\\nOUTBREAK OF HOSTILITIES (2023)\\n\\nMarch 1, 2023: RedLandic National Army (RLNA) launches Operation Crimson Dawn\\nMarch 5-12,\",\n        \"multi_modal\": null\n      },\n      \"relevance_score\": 0.8926903605461121\n    },\n    {\n      \"index\": 5,\n      \"document\": {\n        \"text\": \"International Response to the RedLand Conflict\\n\\nUNITED NATIONS ACTIONS\\n\\nThe United Nations has taken several actions in response to the conflict:\\n\\nSecurity Council Resolutions:\\n- Resolution 2845 (April 2023): Called for immediate ceasefire - VETOED\\n- Resolution 2846 (July 2023): Demanded humanitarian access - VETOED\\n- Resolution 2847 (February 2024): Ceasefire and peace talks - PASSED unanimously\\n- Resolution 2850 (April 2024): Established humanitarian corridor framework\\n\\nUN Investigations:\\n- Commission of Inquiry established March 2024\\n- Investigating alleged war crimes by both parties\\n- document expected December 2024\\n\\nREGIONAL ORGANIZATIONS\\n\\nHighlands Regional Council\",\n        \"multi_modal\": null\n      },\n      \"relevance_score\": 0.7653120160102844\n    },\n    {\n      \"index\": 4,\n      \"document\": {\n        \"text\": \" decades:\\n- Internally displaced persons (IDPs): 2.3 million\\n- Refugees in neighboring countries: 850,000\\n- Primary host countries: Westria (420,000), Eastmark (210,000), Nordland (180,000)\\n\\nMajor IDP camps have been established at:\\n- Camp Hope (outside RedLand City): 85,000 residents\\n- Azure Valley Camp: 67,000 residents\\n- Mountain View Settlement: 43,000 residents\\n\\nHUMANITARIAN ACCESS\\n\\nAccess to conflict zones remains severely restricted:\\n- UN humanitarian convoys attacked 14 times\\n- 8 aid workers killed in the conflict\\n- 23% of southern RedLand inaccessible to aid\",\n        \"multi_modal\": null\n      },\n      \"relevance_score\": 0.47680166363716125\n    },\n    {\n      \"index\": 1,\n      \"document\": {\n        \"text\": \" (HRC):\\n- Suspended RedLand's membership (March 2023)\\n- Imposed economic sanctions on RLNA leadership\\n- Established joint humanitarian fund\\n\\nAfrican Union:\\n- Appointed Special Envoy for RedLand conflict\\n- Proposed peacekeeping mission (pending approval)\\n- Called for arms embargo on both parties\\n\\nNATIONAL GOVERNMENTS RESPONSE\\n\\nSupporting RLNA:\\n- East Federation: $200M in military aid, technical advisors\\n- Northern Alliance: Arms sales, intelligence sharing\\n- People's Republic of Chang: Economic loans, infrastructure contracts\\n\\nSupporting ALF:\\n- Westria: Humanitarian aid, alleged arms shipments (denied)\\n- Nordic Coalition: Medical supplies, refugee support\\n- Republic of Freeland: Diplomatic recognition\",\n        \"multi_modal\": null\n      },\n      \"relevance_score\": 0.28774431347846985\n    },\n    {\n      \"index\": 6,\n      \"document\": {\n        \"text\": \" of Azuria (disputed)\\n\\nNeutral/Peace-focused:\\n- European Union: Sanctions on both sides, €150M humanitarian aid\\n- United States: Diplomatic mediation, $75M refugee assistance\\n- Japan: Medical aid, infrastructure reconstruction fund\\n\\nECONOMIC SANCTIONS\\n\\n- RLNA leadership assets frozen in 45 countries\\n- Cobalt export restrictions imposed by EU and US\\n- International banks suspended transactions with RedLandic accounts\\n- ALF leadership targeted by counter-terrorism sanctions in some countries\\n\\nPEACE EFFORTS\\n\\nGeneva Peace Talks (March 2024):\\n- Failed after two weeks\\n- Disagreement on ceasefire terms and territorial status\\n- Both sides accused of bad faith negotiations\\n\\nCurrent Initiatives:\\n- Vatican-mediated\",\n        \"multi_modal\": null\n      },\n      \"relevance_score\": 0.03416884317994118\n    },\n    {\n      \"index\": 0,\n      \"document\": {\n        \"text\": \" organizations\\n- Food insecurity affecting 3.2 million people\\n\\nCRITICAL INFRASTRUCTURE DAMAGE\\n\\n- Hospitals damaged/destroyed: 34\\n- Schools damaged/destroyed: 127\\n- Water treatment facilities damaged: 8\\n- Power assembly capacity reduced by 45%\\n- Bridges destroyed: 23 major crossings\\n\\nThe World Health Organization has documented outbreaks of cholera and measles in IDP camps due to inadequate sanitation and overcrowding.\",\n        \"multi_modal\": null\n      },\n      \"relevance_score\": 0.005575426388531923\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "connection",
+              "value": "close"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json"
+            },
+            {
+              "key": "date",
+              "value": "Fri, 27 Feb 2026 11:52:59 GMT"
+            },
+            {
+              "key": "x-request-id",
+              "value": "abc5169580138b15a53cbf4f45695e12"
+            },
+            {
+              "key": "content-length",
+              "value": "6671"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "0c7d0e83-05ed-4da5-9df8-33d0cea33d1a"
+    },
+    {
+      "type": "route",
+      "uuid": "2f2ffb0c-ec29-475f-8c28-45affe99b456"
+    },
+    {
+      "type": "route",
+      "uuid": "fd76f027-df5a-4d8a-b014-a7e98ce8ded9"
+    },
+    {
+      "type": "route",
+      "uuid": "eed8e4de-1076-43ee-ba0f-31e8765ae389"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "http://vllm.<CLUSTER_IP>.nip.io",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

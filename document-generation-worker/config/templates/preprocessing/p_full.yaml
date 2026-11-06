@@ -1,0 +1,15 @@
+preprocessing:
+  - processor:
+    name: refined_summary
+    type: refined_summary # type of subchunking
+  - processor:
+    name: entity_extraction
+    type: entity_extraction # type of subchunking
+  - processor:
+    name: key_points # code name to use in "using option"
+    type: key_points # type of subchunking
+  - processor:
+    name: summaries
+    type: summaries # type of subchunking
+context:
+  language: english

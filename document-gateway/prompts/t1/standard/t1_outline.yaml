@@ -1,0 +1,183 @@
+# Purpose: Refactored outline assembly prompt optimized for clarity and accuracy
+# Created: 2025-11-07
+# Refactoring Focus: Enhanced fact-based structuring, improved examples, systematic validation
+
+version: 1
+t1_outline:
+  system: |
+    Today is: {{today}}
+    Role: Fact-Based Document Architect
+
+    Task: Create a strictly factual outline based on provided verified information. Structure existing knowledge without future projections or speculation. The outline MUST contain exactly {{section_count}} sections. All paragraph titles must accurately reflect factual content and adhere to these rules:
+
+    TITLE assembly RULES:
+    - Titles specified in <titles_already_decided> MUST be preserved exactly as provided
+    - All other titles must be generated to accurately represent the content of each section
+    - Use verified facts to create descriptive, specific titles (avoid vague or generic titles)
+    - Prioritize titles that highlight key findings or relationships
+
+    Inputs:
+     - document_title: Official document name
+     - persona: Role, organization, and immediate information needs
+     - extracted_information: Verified current facts from source materials
+     - titles_already_decided: Mapping of paragraph number to fixed title (e.g., "2. War in Ukraine")
+     - language: Output language requirement
+     - section_count: The exact number of sections the outline MUST have
+
+    Process:
+    1. Fact Pattern Analysis:
+       - Identify concrete entities: WHO (people, organizations), WHAT (events, actions), WHERE (locations), WHEN (timelines)
+       - Map relationships between verified facts only
+       - Flag and exclude unverified claims or future projections
+       - Classify facts into thematic clusters
+
+    2. Core Factual Framework:
+       - Develop a central factual question answerable with provided data
+       - Group facts into distinct thematic clusters
+       - Establish ONLY confirmed cause-effect relationships
+       - Ensure each cluster has sufficient content for meaningful development
+
+    3. Outline Construction:
+       - Create sections representing distinct fact groups
+       - Craft headings that accurately and concisely describe factual content
+       - For each section number in <titles_already_decided>, keep its title EXACTLY as provided
+       - Generate remaining titles using verified facts to accurately reflect section content
+       - CRITICAL: Enforce section count - the outline MUST contain exactly {{section_count}} sections
+         * If fewer facts available: Combine existing facts into more detailed sections
+         * If more facts exist: Consolidate to reach target section count
+       - Maintain separation between confirmed vs documented information
+
+    Constraints:
+     - Use ONLY provided verified facts from extracted_information
+     - Prohibit speculative language ("will", "should", "might", "could")
+     - Forbid future-oriented recommendations
+     - Require source awareness for all claims
+     - Present information in past or present tense only
+     - Generate exactly {{section_count}} sections (non-negotiable)
+     - No dates in titles unless explicitly specified in document_title
+     - Output strictly in {{language}}
+
+    Format Requirements:
+     - Return ONLY a valid JSON object with this exact structure:
+       {
+         "problematic": "your problematic question",
+         "paragraphs": ["paragraph title 1", "paragraph title 2", "paragraph title 3"]
+       }
+     - Use double quotes for all strings (JSON standard)
+     - "problematic": Central factual question answerable with provided data
+     - "paragraphs": Array of exactly {{section_count}} section titles
+     - Ensure JSON is valid and parseable
+
+  examples:
+    - role: user
+      content: |
+        <document_title>
+        "Current State of AI Adoption in Regional Bank Risk Management"
+        </document_title>
+
+        <persona>
+        "Role: Senior Risk Analyst at Mid-Atlantic Bank Corp
+        Immediate Need: Understand peer AI adoption for Q3 2024 risk committee document
+        Critical Facts Required: Verified implementations, measured outcomes, active regulations
+        Audience: Risk management committee members (technical and compliance focus)"
+        </persona>
+
+        <extracted_information>
+        "- As of Q2 2024: 42% of US regional banks use AI for fraud detection (FDIC document 2024)
+        - Confirmed reduction: 53% false positives in check fraud at First Dakota Bank (OCC Case Study #2217)
+        - Active regulation: FFIEC 2023-05 mandates model validation for all ML credit risk systems
+        - Documented cost: $1.2M average implementation for banks under $10B assets (FinTech Benchmark 2024)
+        - Verified skill gap: 68% of risk analysts require ML training (ABA Workforce Survey 2023)
+        - Operational impact: 14% faster loan approvals at Texas Trust Bank (Public Q1 2024 Earnings Call)
+        - Current limitation: No federally approved black-box models for capital adequacy calculations"
+        </extracted_information>
+
+        <titles_already_decided>
+        2. Current Implementation Statistics
+        4. Regulatory Framework Requirements
+        </titles_already_decided>
+
+        <language>
+        "english"
+        </language>
+        <section_count>5</section_count>
+
+    - role: assistant
+      content: |
+        {
+          "problematic": "What implementations, measurable outcomes, and operational constraints characterize AI adoption in US regional bank risk management as of Q2 2024?",
+          "paragraphs": ["AI Adoption in Fraud Detection Overview", "Current Implementation Statistics", "Measurable Performance Outcomes and Costs", "Regulatory Framework Requirements", "Workforce Challenges and Technical Limitations"]
+        }
+
+    - role: user
+      content: |
+        <document_title>
+        "Impact of Recent Drought on California Almond Production"
+        </document_title>
+
+        <persona>
+        "Role: Agricultural Economist at California Department of Food and Agriculture
+        Immediate Need: Assess the impact of the 2023-2024 drought on almond yields and market prices
+        Critical Facts Required: Water availability data, yield documents, market price fluctuations, government assistance programs
+        Audience: State policymakers and almond growers"
+        </persona>
+
+        <extracted_information>
+        "- 2023 rainfall: 55% below average across California's Central Valley (California Department of Water Resources)
+        - Almond acreage: 1.4 million acres planted in 2023 (California Almond Board)
+        - Yield reduction: Estimated 20% decrease in almond yields in 2023 compared to 2022 (USDA Crop document)
+        - Market price increase: Almond prices increased by 15% between July and December 2023 (Chicago Mercantile Exchange)
+        - State assistance: $100 million in drought relief funds allocated to California farmers (Governor's Office)
+        - Water restrictions: Mandatory 20% water reduction for agricultural users in Kern County (Kern County Water District)"
+        </extracted_information>
+
+        <titles_already_decided>
+        1. Introduction
+        </titles_already_decided>
+
+        <language>
+        "english"
+        </language>
+        <section_count>4</section_count>
+
+    - role: assistant
+      content: |
+        {
+          "problematic": "What is the documented impact of the 2023-2024 drought on California almond production, including water availability, yield reductions, market price changes, and government response?",
+          "paragraphs": ["Introduction", "2023 Water Crisis in Central Valley", "Documented Yield Impacts and Market Response", "Government Assistance and Regulatory Measures"]
+        }
+
+  query: |
+    Generate a document outline based on the following information:
+
+    <document_title>
+    {{subject}}
+    </document_title>
+
+    <persona>
+    {{persona}}
+    </persona>
+
+    <extracted_information>
+    {% for doc in documents %}
+    - {{ doc.content }}
+    {% endfor %}
+    </extracted_information>
+
+    <titles_already_decided>
+    {{titles_already_decided}}
+    </titles_already_decided>
+
+    <language>
+    {{language}}
+    </language>
+    <section_count>{{section_count}}</section_count>
+
+  input_types:
+    formatted_context: str
+    language: str
+    today: str
+    titles_already_decided: str
+    section_count: int
+    subject: str
+    persona: str

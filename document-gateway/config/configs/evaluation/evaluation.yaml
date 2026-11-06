@@ -1,0 +1,41 @@
+# Components Evaluation (evaluate Retriever and LLM)
+MSRS:
+  dataset_path: yale-nlp/MSRS
+  local_dataset_path: src/eval/MSRS_eval/data/msrs_dataset_setup
+  store_name: eval
+  result_output_path: src/eval/MSRS_eval/outputs
+  story_assembly_prompt_name: oracle_story
+  meeting_assembly_prompt_name: oracle_meeting
+  g_eval_relevance_prompt_name: G_eval_relevance
+  g_eval_consistency_prompt_name: G_eval_consistency
+  truncate: false
+  truncate_length: 1000
+
+# Pipeline Evaluation (evaluate the document assembly)
+doc_assembler_eval:
+  api_base_url: "http://localhost:5000"
+  documents_dir: ["src/eval/doc_assembler_eval/data/documents/document-news-items/Afghanistan-2018"]
+  documents_dir: "src/eval/doc_assembler_eval/data/documents"
+  n_document_per_gt: 2
+  ground_truth_path: "src/eval/doc_assembler_eval/data/ground_truth.jsonl"
+  result_dir: "src/eval/doc_assembler_eval/data/results"
+  g_eval:
+    consistency: G_eval_consistency
+    relevance: G_eval_relevance
+    quality: G_eval_quality
+    coherence: G_eval_coherence
+
+G_eval: # For when we want to use an api, if Nothing is set, defaults are parameters in llm/llm_config
+  model: "ministral-14b-instruct"
+  base_url: "http://vllm.<CLUSTER_IP>.nip.io/v1"
+  api_key: "no api key"
+  temperature: 0.70
+  max_output_tokens: 8192
+  timeout: 10000.0
+  top_p: 0.8
+
+embedder_config:
+  type: api
+  url: "http://vllm.<CLUSTER_IP>.nip.io/v1"
+  model: "qwen3-embed-4b"
+  dimension: 2560

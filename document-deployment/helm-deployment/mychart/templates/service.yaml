@@ -1,0 +1,32 @@
+{{- $root := . -}}
+{{- $appVersion := $root.Chart.AppVersion | replace "." "-" | lower -}}
+{{- range $key, $component := .Values.components }}
+{{- if and $component.enabled $component.service $component.service.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  # name: {{/* $component.service.name */}}
+  name: {{ printf "%s-%s-service" $component.name $appVersion }}
+  namespace: {{ include "projectname.namespace" $root }}
+  labels:
+    app.kubernetes.io/name: {{ printf "%s-%s-service" $component.name $appVersion }}
+    app.kubernetes.io/component: {{ $component.component }}
+    {{/*- include "projectname.labels" $root | nindent 4 */}}
+spec:
+  type: {{ $component.service.type | default $root.Values.service.type }}
+  selector:
+    app.kubernetes.io/name: {{ printf "%s-%s" $component.name $appVersion }}
+  ports:
+    {{- range $component.service.ports }}
+    - name: {{ .name | default "http" }}
+      protocol: {{ .protocol | default "TCP" }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      {{- if .nodePort }}
+      nodePort: {{ .nodePort }}
+      {{- end }}
+    {{- end }}
+
+{{- end }}  # Closing the first 'if' condition
+{{- end }}  # Closing the 'range' condition 

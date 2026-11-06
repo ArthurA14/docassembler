@@ -1,0 +1,31 @@
+database: qdrant # elastic, qdrant or inmemory, if elastic or qdrant : url needed
+url: http://qdrant.genai.<CLUSTER_IP>.nip.io:80
+# url: http://elastic.genai.<CLUSTER_IP>.nip.io:80
+
+indexes:
+  sections:
+    name: "sections"
+    description: "Generated sections and their metadata used in generated documents using the 'document assembly' system"
+  documents:
+    name: "documents"
+    description: "Generated documents and their metadata using the 'document assembly' system"
+  files:
+    name: "files"
+    description: "Original files metadata and storage"
+  documents:
+    name: "documents"
+    description: "Extracted text and knowledge from files"
+  feedback:
+    name: "feedback"
+    decription: "Feedback collected from users"
+  prompts:
+    name: "prompts"
+    decription: "User-defined and system prompts used for document assembly"
+  templates:
+    name: "templates"
+    decription: "Template structures for generating documents, including static and dynamic versions"
+  eval:
+    name: "eval"
+    description: "Playground for evaluation on the MSRS dataset"
+    embedding_dim: 2560
+embed_chunks: True

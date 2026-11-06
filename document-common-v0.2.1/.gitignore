@@ -1,0 +1,41 @@
+# Environment folders and files
+.vscode
+.zed
+.opencode
+.specify
+.pytest_cache
+.git
+.venv
+*.jsonl
+.env
+.ropeproject
+.ruff_cache
+98proxy
+lib
+
+# Dev
+.beads
+.claude
+AGENTS.md
+specs/
+
+# Data and result folders
+data*
+results/
+outputs*/
+test_file/
+
+# Logging
+*.log
+logs/
+
+# Extra files/folders
+*.tar.gz
+*.tar
+*.zip
+
+# Python execution folders
+# __pycache__/
+**/__pycache__/
+
+/document_common/hub/tokenizer.json

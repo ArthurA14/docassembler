@@ -1,0 +1,6 @@
+stages:
+  - lint
+  # - test
+  - build
+  # - trigger_deploy
+  # - end-to-end-test

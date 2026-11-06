@@ -1,0 +1,120 @@
+# values-cpu-llm.yaml
+#
+# Purpose:
+# - stop calling http://vllm.<CLUSTER_IP>.nip.io/v1 for the CPU test path
+# - point text generation to an internal Kubernetes CPU LLM service
+# - point the embedder to an internal CPU endpoint if available
+# - disable reranking to avoid calls to /v1/rerank on the external vLLM service
+
+config:
+  files:
+    llm-config.yaml: |
+      ## CPU-ONLY INTERNAL SETTINGS
+      ## Internal Kubernetes service exposing an OpenAI-compatible API.
+      ## Expected endpoint:
+      ##   GET/POST http://llm-cpu.document-assembly.svc.cluster.local:8080/v1/...
+      model: "cpu-llm"
+      base_url: "http://llm-cpu.document-assembly.svc.cluster.local:8080/v1"
+
+      ## COMMON
+      api_key: "no api key"
+      temperature: 0.70
+      max_output_tokens: 2048
+      timeout: 10000.0
+      top_p: 0.8
+
+    embedder-settings.yaml: |
+      # 2 types are allowed : `inmemory` for embedding on the running pc, `api` for running the embedding from a docker with an api.
+      # if type is `inmemory` a `model` and a `dimension` can be specified
+      # if type is `api` an `url` and a `dimension` MUST be provided
+      #     -> The docker should accept at the specified url a json with a 'text' attribute and return a json with a 'vector' attribute that is a List[float]
+
+      ## CPU-ONLY INTERNAL SETTINGS
+      ## Warning:
+      ## - If the embedding code expects a custom {"text": "..."} -> {"vector": [...]} endpoint,
+      ##   llm-cpu must expose that format.
+      ## - If the embedding code uses an OpenAI-compatible client, /v1/embeddings is coherent.
+      type: api
+      url: "http://llm-cpu.document-assembly.svc.cluster.local:8080/v1"
+      model: "cpu-embedder"
+      dimension: 768
+
+    reranker-settings.yaml: |
+      # Reranker Configuration
+      # CPU test mode:
+      # - no call to http://vllm.<CLUSTER_IP>.nip.io/v1/rerank
+      # - reranking disabled unless a dedicated CPU reranker API is deployed
+
+      api:
+        url: "http://llm-cpu.document-assembly.svc.cluster.local:8080/v1/rerank"
+        api_key_env_var: "QWEN_API_KEY"
+        model: "cpu-reranker"
+        timeout_seconds: 10
+        max_retries: 0
+        retry_delay: 1.0
+
+      document_mode:
+        enabled: false
+        top_k_input: 100
+        top_k_output: 50
+        min_score: 0.0
+        normalize_scores: true
+        fallback_to_embedding: true
+
+      citation_mode:
+        enabled: false
+        batch_size: 32
+        base_threshold: 0.75
+        normalize_scores: true
+
+        adaptive_retry:
+          enabled: false
+          max_retries: 0
+          threshold_decrement: 0.1
+          min_threshold: 0.50
+
+        fuzzy_fallback:
+          enabled: true
+          threshold: 0.85
+          scorer: "token_sort_ratio"
+          min_length: 10
+
+        cache:
+          enabled: true
+          max_size: 10000
+          ttl_seconds: 3600
+
+      logging:
+        log_api_calls: true
+        log_fallbacks: true
+        log_scores: false
+        log_latency: true
+
+      performance:
+        async_enabled: false
+        batch_parallel: false
+
+components:
+  gateway:
+    resources:
+      requests:
+        cpu: "2000m"
+        memory: "2Gi"
+      limits:
+        memory: "4Gi"
+
+  ingestionWorker:
+    resources:
+      requests:
+        cpu: "4000m"
+        memory: "4Gi"
+      limits:
+        memory: "8Gi"
+
+  docassemblerWorker:
+    resources:
+      requests:
+        cpu: "4000m"
+        memory: "4Gi"
+      limits:
+        memory: "8Gi"

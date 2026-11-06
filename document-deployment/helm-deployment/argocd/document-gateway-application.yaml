@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: document-gateway
+  namespace: argocd-ns                     # --- Namespace where Argo CD is installed in the cluster ---
+  # ==== The `Application` object lives in this namespace ====
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://gitlab.internal.instance.com/group-example/document-deployment.git
+    targetRevision: argocd/main            # --- Branch used by the Argo CD controller to compare Git with Kubernetes ---
+    path: helm-deployment/mychart
+    # ==== Argo CD reads the `argocd/main` branch, from the `helm-deployment/mychart` directory ====
+
+    helm:
+      valueFiles:
+        - values.yaml
+        # ==== Logical equivalent of `helm template helm-deployment/mychart -f values.yaml` ====
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: doc-assembler-argocd-depl      # --- Application namespace ---
+    # ==== Argo CD deploys the application to the same cluster, in the `doc-assembler-argocd-depl` namespace ====
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    # ==== `prune: true` removes from Kubernetes resources that were removed from Git ====
+    # ==== `selfHeal: true` restores the Git state if someone manually changes the cluster with `kubectl edit` ====
+    # ==== `syncPolicy.automated` auto-sync lets Argo CD synchronize auto. when it detects a drift between Git and the Kubernetes cluster ====

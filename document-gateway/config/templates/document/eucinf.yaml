@@ -1,0 +1,38 @@
+template_name: eucinf
+description: This template generates a hook, a context, a main body with 3 paragraphs and a conclusion.
+document:
+  - section:
+      method: direct
+      title: "Introduction"
+      name: intro # snake_case identifier
+      prompt: t1_introduction_v2
+      using: [main]
+      num_lines:
+        min: 3
+        max: 4
+
+  - section:
+      method: abcde_method
+      title: "Overview"
+      name: main
+      prompt: actors_method
+      method_parameters:
+        actors_prompt: actors_method
+        behavior_prompt: behavior_method
+        content_prompt: content_method
+        diffuse_prompt: diffuse_method_v2
+        entities_prompt: entities_method
+      using: []
+      num_lines:
+        min: 30
+        max: 50
+
+  - section:
+      method: direct
+      title: "Conclusion"
+      name: conclusion
+      prompt: t1_conclusion_v2
+      using: [intro, main]
+      num_lines:
+        min: 2
+        max: 3

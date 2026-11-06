@@ -1,0 +1,23 @@
+type: api
+
+# Base URL (no trailing slash)
+# In-cluster (recommended) :
+# url: "http://popcorn-ner-service.document-assembly.svc.cluster.local"
+url: "http://popcorn-ner.<CLUSTER_IP>.nip.io" # "http://popcorn-ner.<CLUSTER_IP>.nip.io:8087"
+
+endpoints:
+  health: "/health"
+  extract: "/extract"
+  process: "/process"
+
+request:
+  timeout_s: 60
+  connect_timeout_s: 5
+  read_timeout_s: 60
+  retries: 2
+  backoff_s: 0.5
+
+payload:
+  default_lang: "eng"
+  text_field: "text"
+  lang_field: "lang"

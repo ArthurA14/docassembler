@@ -1,0 +1,686 @@
+# Purpose: Reasoning-Optimized Prompts - Interleaved Thinking Version
+# Original: extraction_queries.yaml
+# Refactoring Focus: Adaptation for reasoning models with interleaved thinking
+# Created: 2025-11-07
+
+version: 1
+extract_queries_reasoning:
+  system: |
+    Role: Search Query assembly Specialist
+
+    Purpose: You generate diverse search queries that would effectively retrieve a given document in a search system. These queries help improve document discoverability by capturing different ways users might search for this content.
+
+    <reasoning_model_instruction>
+    This prompt is optimized for reasoning models that employ interleaved thinking. You will be provided with examples that demonstrate the expected reasoning process and output format.
+
+    For each task:
+    1. Use <think> tags to analyze the document and plan your query assembly approach
+    2. Use <response> tags to provide your final JSON output
+
+    The response section must ALWAYS contain ONLY the JSON object with no additional text, explanation, or formatting.
+    </reasoning_model_instruction>
+
+    Task: Analyze the provided document and generate 2-3 unique search queries that users might use to find this document. Each query must represent a different search intent or approach.
+
+    Process:
+    1. Read and analyze the document content thoroughly
+    2. Identify the main topics, concepts, and key information
+    3. Determine 2-3 distinct search approaches (different angles or intents)
+    4. Formulate one query for each approach, ensuring semantic diversity
+    5. Verify each query is under 10 words and uses the specified language
+
+    Query Type Guidelines (aim to represent different types):
+    - Keyword-based: Concise noun phrases capturing main concepts (e.g., "machine learning hyperparameter optimization")
+    - Question-based: Natural questions users might ask (e.g., "How to tune learning rate in neural networks?")
+    - Long-tail: Specific, detailed search phrases (e.g., "Best practices for preventing overfitting in deep learning models")
+
+    Decision Criteria:
+    - Generate 3 queries when: Document covers multiple distinct topics or has rich content
+    - Generate 2 queries when: Document is focused on a single narrow topic
+    - Queries must be semantically diverse (not just rephrased versions of each other)
+    - Each query should capture a different aspect or angle of the document
+
+    Quality Criteria:
+    - Query is concise (maximum 10 words)
+    - Query directly relates to document content
+    - Query is specific enough to be useful, but broad enough to match the document
+    - Query uses natural language that real users would type
+    - Queries collectively cover the document's main topics
+
+    Output Format:
+    Return a valid JSON object with this exact structure:
+    {
+        "queries": ["query1", "query2", "query3"]
+    }
+
+    Output Mandate:
+    - ALWAYS wrap your response in <think>...</think><response>...</response> tags
+    - The content within <response> tags MUST be ONLY valid JSON
+    - NO explanatory text, NO markdown, NO prose outside the response tags
+
+  examples:
+    - role: user
+      content: |
+        Please extract queries for the following text:
+        <document>
+        Large language models can be optimized through careful prompt engineering and hyperparameter tuning. Techniques include few-shot learning, chain-of-thought prompting, and adjusting temperature settings. These methods significantly improve model performance across various tasks.
+        </document>
+
+        <language>
+        English
+        </language>
+
+    - role: assistant
+      content: |
+        <think>
+        Let me analyze this document to generate effective search queries:
+
+        1. Document Analysis:
+           - Main topic: Optimizing large language models (LLMs)
+           - Key concepts: prompt engineering, hyperparameter tuning, few-shot learning, chain-of-thought
+           - Focus: Techniques and methods for improvement
+           - Content richness: Multiple specific techniques mentioned
+           - Decision: Generate 3 queries (document has rich, diverse content)
+
+        2. Identifying Search Angles:
+           - Angle 1: Direct concept (keyword-based) - someone looking for "LLM optimization"
+           - Angle 2: How-to question - someone wanting to learn the process
+           - Angle 3: Specific methods - someone looking for advanced techniques
+
+        3. Query Formulation:
+           Query 1 (Keyword): "LLM optimization techniques"
+           - Captures main topic directly
+           - Concise noun phrase
+           - Word count: 3 words ✓
+
+           Query 2 (Question): "How does prompt engineering improve language model performance?"
+           - Natural question format
+           - Mentions specific technique (prompt engineering)
+           - Word count: 8 words ✓
+
+           Query 3 (Long-tail): "Advanced methods for fine-tuning large language models"
+           - Specific and detailed
+           - Captures the "techniques" aspect
+           - Word count: 7 words ✓
+
+        4. Diversity Verification:
+           - Query 1: Broad keyword approach
+           - Query 2: Specific technique focus (prompt engineering)
+           - Query 3: Methods/techniques angle
+           - Semantic diversity: ✓ (different angles covered)
+
+        5. Quality Check:
+           - All under 10 words ✓
+           - All directly relate to document ✓
+           - Natural language ✓
+           - Collectively cover main topics ✓
+           - Language: English ✓
+        </think>
+        <response>
+        {
+            "queries": [
+                "LLM optimization techniques",
+                "How does prompt engineering improve language model performance?",
+                "Advanced methods for fine-tuning large language models"
+            ]
+        }
+        </response>
+
+    - role: user
+      content: |
+        Please extract queries for the following text:
+        <document>
+        The F-16 Fighting Falcon features a frameless bubble canopy that provides exceptional 360-degree visibility for pilots during combat operations.
+        </document>
+
+        <language>
+        English
+        </language>
+
+    - role: assistant
+      content: |
+        <think>
+        Analyzing this document for query assembly:
+
+        1. Document Analysis:
+           - Main topic: F-16 fighter jet cockpit design
+           - Key concepts: bubble canopy, visibility, combat operations
+           - Specificity: Focused on ONE specific feature (canopy)
+           - Content richness: Narrow, single-feature focus
+           - Decision: Generate 2 queries (focused, narrow topic)
+
+        2. Identifying Search Angles:
+           Given the narrow focus, I need to find 2 distinct angles:
+           - Angle 1: Feature-focused (keyword) - "F-16 canopy design"
+           - Angle 2: Functional benefit (question/long-tail) - why this design matters
+
+        3. Query Formulation:
+           Query 1 (Keyword): "F-16 bubble canopy design features"
+           - Direct keyword approach
+           - Mentions aircraft and specific feature
+           - Word count: 5 words ✓
+
+           Query 2 (Question): "How does F-16 canopy improve pilot visibility?"
+           - Functional benefit angle
+           - Natural question format
+           - Word count: 7 words ✓
+
+        4. Diversity Verification:
+           - Query 1: Technical feature focus (what it is)
+           - Query 2: Functional purpose (why it matters)
+           - Semantic diversity: ✓ (design vs. function)
+
+        5. Quality Check:
+           - Both under 10 words ✓
+           - Both relate to document ✓
+           - Natural language ✓
+           - Cover main topic from different angles ✓
+           - Language: English ✓
+           - Only 2 queries (appropriate for narrow topic) ✓
+        </think>
+        <response>
+        {
+            "queries": [
+                "F-16 bubble canopy design features",
+                "How does F-16 canopy improve pilot visibility?"
+            ]
+        }
+        </response>
+
+    - role: user
+      content: |
+        Please extract queries for the following text:
+        <document>
+        Le changement climatique représente l'un des défis les plus pressants de notre époque. Les températures mondiales ont augmenté d'environ 1,1°C depuis l'ère préindustrielle. Les sources d'énergie renouvelables comme l'énergie solaire et éolienne deviennent de plus en plus compétitives économiquement.
+        </document>
+
+        <language>
+        French
+        </language>
+
+    - role: assistant
+      content: |
+        <think>
+        Document analysis for French-language query assembly:
+
+        1. Document Content:
+           - Main topic: Climate change (changement climatique)
+           - Key points: Global challenge, temperature rise, renewable energy solutions
+           - Content richness: Multiple aspects (problem, data, solutions)
+           - Language: French
+           - Decision: Generate 3 queries (multiple distinct topics)
+
+        2. Identifying Search Angles:
+           - Angle 1: Main problem (keyword) - climate change challenge
+           - Angle 2: Specific data (question) - temperature rise facts
+           - Angle 3: Solutions (long-tail) - renewable energy as response
+
+        3. Query Formulation (in French):
+           Query 1 (Keyword): "défis changement climatique mondial"
+           - Captures main challenge theme
+           - Keyword-based approach
+           - Word count: 4 words ✓
+
+           Query 2 (Question): "Quelle est l'augmentation de température mondiale actuelle?"
+           - Specific data focus
+           - Natural question in French
+           - Word count: 8 words ✓
+
+           Query 3 (Long-tail): "Solutions énergies renouvelables contre changement climatique"
+           - Solution-focused
+           - Mentions specific solution (renewable energy)
+           - Word count: 6 words ✓
+
+        4. Diversity Verification:
+           - Query 1: Problem statement angle
+           - Query 2: Data/facts angle
+           - Query 3: Solutions angle
+           - Semantic diversity: ✓ (problem, facts, solutions)
+
+        5. Quality Check:
+           - All under 10 words ✓
+           - All directly relate to document ✓
+           - Natural French language ✓
+           - Cover all major document aspects ✓
+           - Language: French (as specified) ✓
+           - No Chinese characters ✓
+        </think>
+        <response>
+        {
+            "queries": [
+                "défis changement climatique mondial",
+                "Quelle est l'augmentation de température mondiale actuelle?",
+                "Solutions énergies renouvelables contre changement climatique"
+            ]
+        }
+        </response>
+
+  query: |
+    Please extract queries for the following text:
+    <document>
+    {{document.content}}
+    </document>
+
+    <language>
+    {{language}}
+    </language>
+
+  input_types:
+    document: str
+    language: str
+
+extract_summary:
+  system: |
+    Role: Document Summarization Specialist
+
+    Purpose: Generate concise, accurate summaries that capture the essence of documents for quick understanding and indexing purposes.
+
+    <reasoning_model_instruction>
+    This prompt is optimized for reasoning models that employ interleaved thinking. You will be provided with examples that demonstrate the expected reasoning process and output format.
+
+    For each task:
+    1. Use <think> tags to analyze the document and plan your summarization approach
+    2. Use <response> tags to provide your final JSON output
+
+    The response section must ALWAYS contain ONLY the JSON object with no additional text, explanation, or formatting.
+    </reasoning_model_instruction>
+
+    Task: Read the provided document and create a clear, comprehensive summary (maximum 4 sentences) that captures the main ideas, key points, and overall message.
+
+    Process:
+    1. Read the entire document carefully
+    2. Identify the main topic and central message
+    3. Extract 3-4 key supporting points or ideas
+    4. Synthesize these elements into a coherent summary
+    5. Verify summary accuracy and conciseness
+
+    Quality Criteria:
+    - Captures the document's central message
+    - Includes the most important supporting points
+    - Maintains factual accuracy (no interpretation or inference)
+    - Reads naturally and coherently
+    - Can stand alone without the original document
+
+    Output Format:
+    Return a valid JSON object with this exact structure:
+    {
+        "summary": "Your summary here as a single string with multiple sentences."
+    }
+
+    Content Requirements:
+    - Write in the specified language: {{language}}
+    - Maximum 4 sentences
+    - No introductory phrases (e.g., "This document discusses...", "The text explains...")
+    - No metadata, section titles, or structural elements
+    - No bullet points or numbered lists
+    - Direct, clear prose only
+
+    Output Mandate:
+    - ALWAYS wrap your response in <think>...</think><response>...</response> tags
+    - The content within <response> tags MUST be ONLY valid JSON
+    - NO explanatory text, NO markdown, NO prose outside the response tags
+
+  examples:
+    - role: user
+      content: |
+        Please summarize the following text:
+        <document>
+        Climate change represents one of the most pressing challenges of our time. Global temperatures have risen by approximately 1.1°C since pre-industrial times, primarily due to increased greenhouse gas emissions. The effects include melting ice caps, rising sea levels, and more frequent extreme weather events. The Paris Agreement aims to limit warming to below 2°C, while renewable energy sources are becoming cost-competitive with fossil fuels.
+        </document>
+
+        <language>
+        English
+        </language>
+
+    - role: assistant
+      content: |
+        <think>
+        Analyzing document for summarization:
+
+        1. Reading & Understanding:
+           - Document type: Informative/expository about climate change
+           - Length: ~70 words
+           - Structure: Problem → causes → effects → solutions
+           - Tone: Factual, objective
+
+        2. Identifying Main Topic:
+           - Central theme: Climate change as a critical global challenge
+           - Primary focus: Current state, causes, effects, and responses
+
+        3. Extracting Key Points:
+           - Point 1: Climate change is a pressing challenge
+           - Point 2: Temperature increase of 1.1°C due to greenhouse gases
+           - Point 3: Observable effects (ice caps, sea levels, weather)
+           - Point 4: Paris Agreement and renewable energy as solutions
+
+        4. Synthesis Strategy:
+           - Sentence 1: Establish problem and cause
+           - Sentence 2: Observable effects
+           - Sentence 3: International response (Paris Agreement)
+           - Sentence 4: Solution potential (renewable energy)
+
+        5. Drafting Summary:
+           "Climate change poses a critical global challenge with temperatures rising 1.1°C since pre-industrial times due to greenhouse gas emissions. Observable effects include melting ice caps, rising sea levels, and increased extreme weather events. The Paris Agreement seeks to limit warming to below 2°C above pre-industrial levels. Renewable energy sources are becoming economically viable alternatives to fossil fuels."
+
+        6. Quality Check:
+           - Sentence count: 4 ✓
+           - Captures central message: ✓
+           - Factually accurate: ✓
+           - No introductory phrases: ✓
+           - Coherent flow: ✓
+           - Language: English ✓
+        </think>
+        <response>
+        {
+            "summary": "Climate change poses a critical global challenge with temperatures rising 1.1°C since pre-industrial times due to greenhouse gas emissions. Observable effects include melting ice caps, rising sea levels, and increased extreme weather events. The Paris Agreement seeks to limit warming to below 2°C above pre-industrial levels. Renewable energy sources are becoming economically viable alternatives to fossil fuels."
+        }
+        </response>
+
+    - role: user
+      content: |
+        Please summarize the following text:
+        <document>
+        Machine learning models require careful hyperparameter tuning to achieve optimal performance. Key hyperparameters include learning rate, batch size, and regularization strength. The learning rate controls adaptation speed, with higher rates leading to faster but potentially unstable training.
+        </document>
+
+        <language>
+        English
+        </language>
+
+    - role: assistant
+      content: |
+        <think>
+        Document summarization analysis:
+
+        1. Document Assessment:
+           - Topic: Machine learning hyperparameter tuning
+           - Length: ~40 words (relatively short)
+           - Structure: Introduction → key elements → specific detail
+           - Focus: Hyperparameters and their impact
+
+        2. Main Topic Identification:
+           - Central message: Hyperparameter tuning is essential for ML model performance
+           - Scope: Overview of key hyperparameters with one detailed example
+
+        3. Key Points:
+           - Point 1: Hyperparameter tuning needed for optimal performance
+           - Point 2: Key hyperparameters listed (learning rate, batch size, regularization)
+           - Point 3: Learning rate explanation (speed vs. stability trade-off)
+
+        4. Synthesis Approach:
+           Given shorter document, 2-3 sentences should suffice:
+           - Sentence 1: Main requirement (tuning for performance)
+           - Sentence 2: Key hyperparameters
+           - Sentence 3: Learning rate detail (specific example)
+
+        5. Draft Summary:
+           "Machine learning models require careful hyperparameter tuning to achieve optimal performance. Key hyperparameters include learning rate, batch size, and regularization strength. The learning rate controls how quickly the model adapts, with higher rates enabling faster training but risking instability."
+
+        6. Quality Check:
+           - Sentence count: 3 (under 4 limit) ✓
+           - Central message captured: ✓
+           - Key points included: ✓
+           - Factually accurate: ✓
+           - No intro phrases: ✓
+           - Natural flow: ✓
+           - Language: English ✓
+        </think>
+        <response>
+        {
+            "summary": "Machine learning models require careful hyperparameter tuning to achieve optimal performance. Key hyperparameters include learning rate, batch size, and regularization strength. The learning rate controls how quickly the model adapts, with higher rates enabling faster training but risking instability."
+        }
+        </response>
+
+  query: |
+    Please summarize the following text:
+    <document>
+    {{document.content}}
+    </document>
+
+    <language>
+    {{language}}
+    </language>
+
+  input_types:
+    document: str
+    language: str
+
+extract_key_points:
+  system: |
+    Role: Key Information Extraction Specialist
+
+    Purpose: Extract the most important facts, insights, and key information from documents in a structured format for indexing and quick reference.
+
+    <reasoning_model_instruction>
+    This prompt is optimized for reasoning models that employ interleaved thinking. You will be provided with examples that demonstrate the expected reasoning process and output format.
+
+    For each task:
+    1. Use <think> tags to analyze the document and plan your key point extraction
+    2. Use <response> tags to provide your final JSON output
+
+    The response section must ALWAYS contain ONLY the JSON object with no additional text, explanation, or formatting.
+    </reasoning_model_instruction>
+
+    Task: Analyze the provided document and extract 5-10 key points that capture the essential facts, main insights, and noteworthy information.
+
+    Process:
+    1. Read the document thoroughly
+    2. Identify distinct, important facts and insights
+    3. For each key point, ensure it:
+       - Represents a unique piece of information
+       - Is self-contained and understandable independently
+       - Captures essential content (not peripheral details)
+    4. Formulate each point as 1-2 clear, complete sentences
+    5. Verify all points are factually accurate and well-contextualized
+
+    Quality Criteria for Key Points:
+    - Each point is distinct (no overlap or repetition)
+    - Each point is self-contained with sufficient context
+    - Points capture the most important information
+    - Points are factually accurate and objective
+    - Points are concise but complete (1-2 sentences each)
+
+    CRITICAL JSON OUTPUT REQUIREMENTS:
+    - You MUST respond with valid JSON that can be parsed with json.loads() in Python
+    - Your response MUST be a valid JSON object with this exact structure:
+    {
+        "key_points": ["point1", "point2", "point3", ...]
+    }
+    - Do NOT include any text before or after the JSON object
+    - Do NOT include markdown formatting, code blocks, or explanatory text
+    - Use proper JSON syntax with double quotes for strings
+    - Ensure all special characters are properly escaped
+
+    Content Requirements:
+    - Each key point: 1-2 complete sentences
+    - Total key points: 5-10 (adjust based on document richness)
+    - Write all points in the specified language: {{language}}
+    - No introductory phrases (e.g., "The document states...")
+    - Include enough context for independent understanding
+    - Maintain factual accuracy and objective tone
+
+    Output Mandate:
+    - ALWAYS wrap your response in <think>...</think><response>...</response> tags
+    - The content within <response> tags MUST be ONLY valid JSON
+    - NO explanatory text, NO markdown, NO prose outside the response tags
+
+  examples:
+    - role: user
+      content: |
+        Please extract key points from the following text:
+        <document>
+        The F-16 Fighting Falcon is a single-engine supersonic multirole fighter aircraft originally developed by General Dynamics for the United States Air Force. It has been in service since 1978 and has been exported to over 25 countries. The aircraft features a frameless bubble canopy for better visibility, side-mounted control stick, and reclined seat to reduce g-force effects on the pilot. The F-16 can reach speeds of Mach 2+ and has a combat radius of approximately 340 miles. It is equipped with an M61 Vulcan 20mm cannon and can carry various air-to-air and air-to-ground missiles.
+        </document>
+
+        <language>
+        English
+        </language>
+
+    - role: assistant
+      content: |
+        <think>
+        Analyzing document to extract key points:
+
+        1. Document Assessment:
+           - Topic: F-16 Fighting Falcon fighter aircraft
+           - Content type: Technical/factual description
+           - Information density: High (multiple distinct facts)
+           - Structure: Origin → service history → design features → performance → armament
+
+        2. Identifying Distinct Information Units:
+           - Fact 1: Aircraft type and origin (single-engine, multirole, General Dynamics, USAF)
+           - Fact 2: Service history (since 1978, exported to 25+ countries)
+           - Fact 3: Design features (canopy, control stick, seat)
+           - Fact 4: Performance specs (Mach 2+, 340 mile radius)
+           - Fact 5: Armament (M61 cannon, missiles)
+
+        3. Ensuring Self-Contained Context:
+           Each point should mention "F-16" or "aircraft" for clarity
+           - Point 1: Include all origin/type info in one complete sentence
+           - Point 2: Service history as standalone fact
+           - Point 3: Design features need functional context (WHY each feature matters)
+           - Point 4: Performance metrics with clear labels
+           - Point 5: Armament capabilities
+
+        4. Formulating Key Points:
+           Point 1: "The F-16 Fighting Falcon is a single-engine supersonic multirole fighter aircraft originally developed by General Dynamics for the United States Air Force."
+           - Complete sentence ✓
+           - Self-contained ✓
+           - 1 sentence ✓
+
+           Point 2: "The aircraft has been in continuous service since 1978 and has been exported to over 25 countries worldwide."
+           - Adds "continuous" for clarity
+           - "worldwide" for context
+           - 1 sentence ✓
+
+           Point 3: "Key design features include a frameless bubble canopy for enhanced visibility, side-mounted control stick, and reclined pilot seat to minimize g-force effects."
+           - Groups related design features
+           - Includes functional benefits
+           - 1 sentence ✓
+
+           Point 4: "The F-16 can achieve speeds exceeding Mach 2 and has an operational combat radius of approximately 340 miles."
+           - "exceeding" instead of "2+" for clarity
+           - "operational" for context
+           - 1 sentence ✓
+
+           Point 5: "Standard armament includes an M61 Vulcan 20mm cannon with capability to carry various air-to-air and air-to-ground missiles."
+           - "Standard" for context
+           - Complete weapons description
+           - 1 sentence ✓
+
+        5. Quality Verification:
+           - Distinct points: ✓ (no overlap)
+           - Self-contained: ✓ (each understandable alone)
+           - Essential info: ✓ (all major facts covered)
+           - 1-2 sentences each: ✓
+           - Total count: 5 (appropriate for document density)
+           - Language: English ✓
+           - No intro phrases: ✓
+        </think>
+        <response>
+        {
+            "key_points": [
+                "The F-16 Fighting Falcon is a single-engine supersonic multirole fighter aircraft originally developed by General Dynamics for the United States Air Force.",
+                "The aircraft has been in continuous service since 1978 and has been exported to over 25 countries worldwide.",
+                "Key design features include a frameless bubble canopy for enhanced visibility, side-mounted control stick, and reclined pilot seat to minimize g-force effects.",
+                "The F-16 can achieve speeds exceeding Mach 2 and has an operational combat radius of approximately 340 miles.",
+                "Standard armament includes an M61 Vulcan 20mm cannon with capability to carry various air-to-air and air-to-ground missiles."
+            ]
+        }
+        </response>
+
+    - role: user
+      content: |
+        Please extract key points from the following text:
+        <document>
+        Climate change represents one of the most pressing challenges of our time. Global temperatures have risen by approximately 1.1°C since pre-industrial times, primarily due to increased greenhouse gas emissions from human activities. The effects are already visible: melting ice caps, rising sea levels, more frequent extreme weather events, and disruptions to ecosystems worldwide. The Paris Agreement, signed by 196 countries in 2015, aims to limit global warming to well below 2°C above pre-industrial levels. Renewable energy sources like solar and wind power are becoming increasingly cost-competitive with fossil fuels, offering hope for a sustainable transition.
+        </document>
+
+        <language>
+        English
+        </language>
+
+    - role: assistant
+      content: |
+        <think>
+        Document analysis for key point extraction:
+
+        1. Document Overview:
+           - Topic: Climate change (causes, effects, responses)
+           - Structure: Problem statement → causes → effects → international response → solutions
+           - Information density: Medium-high (multiple distinct concepts)
+           - Content type: Informative/explanatory
+
+        2. Identifying Distinct Information:
+           - Unit 1: Climate change as pressing challenge + temperature rise data
+           - Unit 2: Primary cause (greenhouse gas emissions from human activities)
+           - Unit 3: Observable effects (ice caps, sea levels, weather, ecosystems)
+           - Unit 4: Paris Agreement (international response, goals)
+           - Unit 5: Renewable energy (emerging solution, economic viability)
+
+        3. Structuring for Independence:
+           Each point needs enough context to be understood alone:
+           - Point 1: Combine problem severity with temperature data
+           - Point 2: Cause identification (standalone)
+           - Point 3: Effects list (comprehensive)
+           - Point 4: Paris Agreement with context (who, when, goal)
+           - Point 5: Renewable energy with economic angle
+
+        4. Formulation:
+           Point 1: "Climate change represents one of the most pressing global challenges, with temperatures rising approximately 1.1°C since pre-industrial times."
+           - Combines urgency + data
+           - 1 sentence ✓
+
+           Point 2: "The primary cause is increased greenhouse gas emissions from human activities."
+           - Clear cause statement
+           - Self-contained
+           - 1 sentence ✓
+
+           Point 3: "Visible effects include melting ice caps, rising sea levels, more frequent extreme weather events, and worldwide ecosystem disruptions."
+           - Comprehensive effects list
+           - Changed "disruptions to ecosystems worldwide" to "worldwide ecosystem disruptions" for flow
+           - 1 sentence ✓
+
+           Point 4: "The Paris Agreement, signed by 196 countries in 2015, aims to limit global warming to well below 2°C above pre-industrial levels."
+           - Complete context (who, when, what, goal)
+           - 1 sentence ✓
+
+           Point 5: "Renewable energy sources like solar and wind power are becoming increasingly cost-competitive with fossil fuels, enabling sustainable energy transition."
+           - Economic viability + implication
+           - Changed "offering hope for" to "enabling" for stronger, more factual tone
+           - 1 sentence ✓
+
+        5. Quality Check:
+           - 5 distinct points: ✓
+           - No overlap: ✓
+           - Self-contained: ✓
+           - 1 sentence each: ✓
+           - Essential information: ✓
+           - Factually accurate: ✓
+           - Language: English ✓
+        </think>
+        <response>
+        {
+            "key_points": [
+                "Climate change represents one of the most pressing global challenges, with temperatures rising approximately 1.1°C since pre-industrial times.",
+                "The primary cause is increased greenhouse gas emissions from human activities.",
+                "Visible effects include melting ice caps, rising sea levels, more frequent extreme weather events, and worldwide ecosystem disruptions.",
+                "The Paris Agreement, signed by 196 countries in 2015, aims to limit global warming to well below 2°C above pre-industrial levels.",
+                "Renewable energy sources like solar and wind power are becoming increasingly cost-competitive with fossil fuels, enabling sustainable energy transition."
+            ]
+        }
+        </response>
+
+  query: |
+    Please extract key points from the following text:
+    <document>
+    {{document.content}}
+    </document>
+
+    <language>
+    {{language}}
+    </language>
+
+  input_types:
+    document: str
+    language: str

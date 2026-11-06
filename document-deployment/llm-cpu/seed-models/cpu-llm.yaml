@@ -1,0 +1,24 @@
+- name: cpu-llm
+  backend: llama-cpp
+  parameters:
+    model: Qwen2.5-1.5B-Instruct-Q4_K_M.gguf
+  context_size: 4096
+  threads: 8
+  f16: false
+
+- name: cpu-embedder
+  backend: llama-cpp
+  embeddings: true
+  parameters:
+    model: jina-embeddings-v2-base-en-Q4_K_M.gguf
+  context_size: 2048
+  threads: 8
+  f16: false
+
+- name: cpu-reranker
+  backend: llama-cpp
+  parameters:
+    model: bge-reranker-v2-m3-Q4_K_M.gguf
+  context_size: 2048
+  threads: 8
+  f16: false

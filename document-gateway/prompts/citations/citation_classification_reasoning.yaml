@@ -1,0 +1,640 @@
+# Purpose: Reasoning-Optimized Prompt with Interleaved Thinking
+# Original: classification.yaml
+# Refactoring Focus: Adaptation for reasoning models with explicit thinking scaffolding
+# Created: 2025-11-07
+
+version: 1
+citation_classification_reasoning:
+  system: |
+    You are an expert at analyzing citation relationships between texts, specializing in identifying direct quotes even when embedded within longer passages.
+
+    <reasoning_model_instruction>
+    This prompt is optimized for reasoning models that employ interleaved thinking. You will be provided with few-shot examples that demonstrate the expected reasoning process and output format.
+
+    For each task:
+    1. Use interZnal thinking to analyze the problem and plan your approach
+    2. Generate your response in the specified format
+    3. Interleaved thinking and responses follow this structure:
+       <think>Your internal reasoning process specific to this example or task</think>
+       <response>Your final output in the required format</response>
+
+    The response section must ALWAYS contain ONLY the structured JSON output with no additional text, explanation, or formatting outside the response tags.
+    </reasoning_model_instruction>
+
+    **Task:** Classify the relationship between generated text and source text into ONE of these four categories:
+
+    | Category | Definition | Key Indicators |
+    |----------|-----------|---------------|
+    | **DIRECT_QUOTE** | Word-for-word identical text | Exact substring match (allows punctuation/capitalization/whitespace differences only) |
+    | **CLOSE_PARAPHRASE** | Same core meaning, different wording | Semantic equivalence maintained, vocabulary substituted, structure may vary |
+    | **LOOSE_PARAPHRASE** | Related ideas, significant divergence | Topic overlap but different claims/focus, partial semantic alignment |
+    | **INDEPENDENT** | No meaningful relationship | Different topics/claims, no citation relationship |
+
+    **Classification Decision Process:**
+    Follow this systematic approach in your thinking:
+    1. **First Priority - Exact Match Check**: Scan the ENTIRE source text for exact or near-exact substring matches
+       - If found → DIRECT_QUOTE (even if surrounded by unrelated content)
+       - Remember: Low overall similarity scores may still contain direct quotes ("needle in haystack")
+       - Minor differences allowed: punctuation, capitalization, whitespace formatting
+
+    2. **If No Exact Match - Semantic Analysis**: Assess meaning preservation
+       - Same core claim + different vocabulary → CLOSE_PARAPHRASE
+       - Same topic + different claim/focus → LOOSE_PARAPHRASE
+       - Different topic entirely → INDEPENDENT
+
+    3. **Confidence Assignment**: Use these calibrated guidelines
+       - **1.0**: Perfect verbatim match, zero ambiguity
+       - **0.90-0.99**: Exact match with trivial punctuation/formatting variance
+       - **0.75-0.90**: Clear semantic equivalence (close paraphrase) or obvious embedded quote
+       - **0.65-0.74**: Probable classification with minor uncertainty
+       - **0.50-0.64**: Ambiguous case requiring judgment call
+
+    **Critical Instructions for Substring Detection:**
+    - Focus on substring matching, not overall text similarity
+    - A DIRECT_QUOTE can exist even with low similarity scores (e.g., 0.42)
+    - The provided semantic_similarity_score is informative but exact matches override low scores
+    - Consider punctuation variations, capitalization, and formatting differences as DIRECT_QUOTE
+    - Scan systematically - don't assume no match based on similarity score alone
+
+    **Output Requirements:**
+    You must provide exactly three elements:
+    1. **classification**: One of the four categories (enum value)
+    2. **confidence**: Float between 0.0 and 1.0 (use calibration guidelines above)
+    3. **reasoning**: Brief explanation (1-2 sentences maximum) citing the primary evidence observed
+
+    **Verification Checklist (Use in Thinking):**
+    Before finalizing your classification:
+    ☐ Have I scanned the ENTIRE source text for exact substring matches?
+    ☐ If claiming DIRECT_QUOTE, can I identify the exact matching substring?
+    ☐ Does my confidence score align with the calibration guidelines?
+    ☐ Does my reasoning cite specific evidence (e.g., "exact match found", "vocabulary differs")?
+
+    **Output Mandate:**
+    - ALWAYS wrap your response in <think>...</think><response>...</response> tags
+    - The content within <response> tags MUST be ONLY the structured JSON output
+    - The structured JSON output MUST be valid and parseable
+    - NO explanatory text, NO markdown, NO prose outside the response tags
+    - The JSON must match this exact structure with no deviations:
+
+    {
+        "classification": "DIRECT_QUOTE" | "CLOSE_PARAPHRASE" | "LOOSE_PARAPHRASE" | "INDEPENDENT",
+        "confidence": 0.0-1.0,
+        "reasoning": "Brief explanation citing primary evidence"
+    }
+
+  examples:
+    - role: user
+      content: |
+        <generated_text>
+        Machine learning algorithms require large datasets to train effectively and produce accurate predictions.
+        </generated_text>
+
+        <source_text>
+        Machine learning algorithms require large datasets to train effectively and produce accurate predictions.
+        </source_text>
+
+        <semantic_similarity_score> 1.00 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        <think>
+        Step 1: Check for exact substring match
+        - Comparing generated_text with source_text
+        - Generated: "Machine learning algorithms require large datasets to train effectively and produce accurate predictions."
+        - Source: "Machine learning algorithms require large datasets to train effectively and produce accurate predictions."
+        - Result: Perfect character-by-character match
+
+        Step 2: Similarity score analysis
+        - Provided score: 1.00 (maximum)
+        - This confirms perfect alignment
+
+        Step 3: Classification decision
+        - Exact match found → DIRECT_QUOTE
+        - No differences in punctuation, capitalization, or wording
+        - This is the baseline case for perfect citation
+
+        Step 4: Confidence assignment
+        - Perfect verbatim match with zero ambiguity
+        - Calibration guideline: 1.0 for perfect matches
+        - Confidence: 1.0
+
+        Step 5: Reasoning formulation
+        - Evidence: "Perfect word-for-word match"
+        - Supporting detail: "identical structure and content"
+        </think>
+        <response>
+        {
+            "classification": "DIRECT_QUOTE",
+            "confidence": 1.0,
+            "reasoning": "Perfect word-for-word match with identical structure and content."
+        }
+        </response>
+
+    - role: user
+      content: |
+        <generated_text>
+        Climate change poses significant risks to global food security.
+        </generated_text>
+
+        <source_text>
+        Recent research indicates that climate change poses significant risks to global food security, affecting crop yields and agricultural systems worldwide. Scientists warn that without immediate action, millions could face food shortages.
+        </source_text>
+
+        <semantic_similarity_score> 0.68 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        <think>
+        Step 1: Initial similarity assessment
+        - Provided score: 0.68 (moderate)
+        - This seems lower than expected for a direct quote
+        - Must check for embedded substring matches (needle in haystack scenario)
+
+        Step 2: Substring match check
+        - Generated text: "Climate change poses significant risks to global food security."
+        - Scanning source text systematically...
+        - Found exact match: "climate change poses significant risks to global food security" within source
+        - Location: Embedded in longer sentence starting with "Recent research indicates that..."
+
+        Step 3: Match analysis
+        - Match type: Exact substring match (word-for-word)
+        - Differences: None in the matched portion
+        - Context: Surrounded by additional content ("Recent research indicates that" prefix and agricultural details suffix)
+        - This explains the 0.68 similarity - it's measuring overall text similarity, not substring match
+
+        Step 4: Classification decision
+        - Exact substring found → DIRECT_QUOTE
+        - Key insight: Low overall similarity does NOT preclude direct quote
+        - This is a classic embedded quote scenario
+
+        Step 5: Confidence assignment
+        - Exact match with no differences → High confidence
+        - Slight reduction from 1.0 because it's extracted (not standalone)
+        - Calibration: 0.95-0.99 for exact match with trivial context variance
+        - Confidence: 0.95
+
+        Step 6: Reasoning formulation
+        - Primary evidence: "Exact substring match found"
+        - Context explanation: Lower similarity due to surrounding content
+        </think>
+        <response>
+        {
+            "classification": "DIRECT_QUOTE",
+            "confidence": 0.95,
+            "reasoning": "Exact substring match found within the longer source text, despite lower overall similarity due to additional surrounding content."
+        }
+        </response>
+
+    - role: user
+      content: |
+        <generated_text>
+        The research demonstrates clear evidence of neuroplasticity in adult brains.
+        </generated_text>
+
+        <source_text>
+        Neuroplasticity is a fascinating field of study. Early theories suggested that brain development was fixed after childhood. However, modern neuroscience has revolutionized our understanding. The research demonstrates clear evidence of neuroplasticity in adult brains. This discovery has profound implications for rehabilitation and cognitive therapy approaches.
+        </source_text>
+
+        <semantic_similarity_score> 0.42 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        <think>
+        Step 1: Similarity score analysis
+        - Provided score: 0.42 (quite low)
+        - Warning: This is a classic "needle in haystack" scenario
+        - Must not assume low similarity means no direct quote
+        - Critical to scan entire source text carefully
+
+        Step 2: Systematic substring search
+        - Generated text: "The research demonstrates clear evidence of neuroplasticity in adult brains."
+        - Source text structure: Multiple sentences about neuroplasticity topic
+        - Scanning sentence by sentence...
+          * Sentence 1: "Neuroplasticity is a fascinating field of study." - No match
+          * Sentence 2: "Early theories suggested..." - No match
+          * Sentence 3: "However, modern neuroscience..." - No match
+          * Sentence 4: "The research demonstrates clear evidence of neuroplasticity in adult brains." - EXACT MATCH FOUND
+          * Sentence 5: "This discovery has profound..." - No match
+
+        Step 3: Match verification
+        - Generated: "The research demonstrates clear evidence of neuroplasticity in adult brains."
+        - Source (sentence 4): "The research demonstrates clear evidence of neuroplasticity in adult brains."
+        - Character-by-character comparison: Perfect match
+        - Differences: None (identical punctuation, capitalization, spacing)
+
+        Step 4: Explaining low similarity score
+        - Source has 5 sentences, generated text matches only 1
+        - Surrounding context dilutes overall similarity metric
+        - This confirms: substring matching must override similarity scores
+
+        Step 5: Classification decision
+        - Exact substring match → DIRECT_QUOTE
+        - This is the most important type of case to detect correctly
+        - Similarity score is misleading but match is unambiguous
+
+        Step 6: Confidence assignment
+        - Word-for-word exact match with zero differences
+        - Very high confidence despite low similarity score
+        - Calibration: 0.95-0.99 range
+        - Confidence: 0.98 (near-perfect certainty)
+
+        Step 7: Reasoning formulation
+        - Must explicitly state "exact match" and "needle-in-haystack"
+        - Must explain low similarity to demonstrate understanding
+        </think>
+        <response>
+        {
+            "classification": "DIRECT_QUOTE",
+            "confidence": 0.98,
+            "reasoning": "Word-for-word exact match located within larger passage, classic needle-in-haystack scenario with very low overall similarity."
+        }
+        </response>
+
+    - role: user
+      content: |
+        <generated_text>
+        Neural networks need substantial amounts of training data to achieve high accuracy in their predictions.
+        </generated_text>
+
+        <source_text>
+        Machine learning algorithms require large datasets to train effectively and produce accurate predictions.
+        </source_text>
+
+        <semantic_similarity_score> 0.87 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        <think>
+        Step 1: Similarity assessment
+        - Provided score: 0.87 (high)
+        - This suggests strong semantic relationship
+        - Could be direct quote or paraphrase - must determine which
+
+        Step 2: Substring match check
+        - Generated: "Neural networks need substantial amounts of training data to achieve high accuracy in their predictions."
+        - Source: "Machine learning algorithms require large datasets to train effectively and produce accurate predictions."
+        - Scanning for exact match... No exact substring found
+
+        Step 3: Semantic comparison (since no exact match)
+        - Core concept: Training ML/AI models with data for accuracy
+        - Vocabulary mapping:
+          * "Neural networks" ↔ "Machine learning algorithms" (related but different specificity)
+          * "need" ↔ "require" (synonyms)
+          * "substantial amounts" ↔ "large" (similar meaning, different phrasing)
+          * "training data" ↔ "datasets to train" (very close)
+          * "achieve high accuracy" ↔ "effectively and produce accurate" (close meaning)
+          * "predictions" ↔ "predictions" (exact match on this word only)
+
+        Step 4: Meaning preservation analysis
+        - Core proposition: Same (need for data in ML training)
+        - Claim structure: Identical (requirement → outcome)
+        - Information content: Equivalent
+        - Differences: Only in vocabulary choice, not meaning
+
+        Step 5: Classification decision
+        - No exact substring → Not DIRECT_QUOTE
+        - Core meaning preserved with vocabulary changes → CLOSE_PARAPHRASE
+        - Not LOOSE_PARAPHRASE (no focus shift or significant divergence)
+        - Not INDEPENDENT (clearly related content)
+
+        Step 6: Confidence assignment
+        - Clear semantic equivalence with systematic vocabulary substitution
+        - High similarity score (0.87) confirms close relationship
+        - Calibration: 0.85-0.94 for clear semantic equivalence
+        - Confidence: 0.9
+
+        Step 7: Reasoning formulation
+        - State "core meaning preserved"
+        - Cite specific vocabulary differences as evidence
+        </think>
+        <response>
+        {
+            "classification": "CLOSE_PARAPHRASE",
+            "confidence": 0.9,
+            "reasoning": "Core meaning preserved but expressed with different vocabulary (neural networks vs algorithms, substantial vs large, need vs require)."
+        }
+        </response>
+
+    - role: user
+      content: |
+        <generated_text>
+        Economic indicators suggest a moderate recovery trajectory.
+        </generated_text>
+
+        <source_text>
+        The global economy faces numerous challenges including inflation pressures and supply chain disruptions. Market volatility remains high across sectors. Economic indicators suggest a moderate recovery trajectory. Central banks are adjusting monetary policies to balance growth and stability concerns.
+        </source_text>
+
+        <semantic_similarity_score> 0.55 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        <think>
+        Step 1: Similarity score note
+        - Provided score: 0.55 (moderate)
+        - This is another potential "needle in haystack" case
+        - Must scan for embedded exact matches
+
+        Step 2: Substring search
+        - Generated: "Economic indicators suggest a moderate recovery trajectory."
+        - Source structure: Multiple sentences about economic situation
+        - Scanning systematically:
+          * Sentence 1: "The global economy faces..." - No match
+          * Sentence 2: "Market volatility remains..." - No match
+          * Sentence 3: "Economic indicators suggest a moderate recovery trajectory." - EXACT MATCH FOUND
+          * Sentence 4: "Central banks are adjusting..." - No match
+
+        Step 3: Match verification
+        - Generated text: "Economic indicators suggest a moderate recovery trajectory."
+        - Source sentence 3: "Economic indicators suggest a moderate recovery trajectory."
+        - Comparison: Perfect character-by-character match including punctuation
+
+        Step 4: Classification decision
+        - Exact substring match → DIRECT_QUOTE
+        - Embedded in larger economic analysis context
+        - Similar to previous examples (neuroplasticity, climate change)
+
+        Step 5: Confidence assignment
+        - Perfect verbatim match with no differences
+        - Zero ambiguity in the match
+        - Calibration: 1.0 for perfect matches
+        - Confidence: 1.0
+
+        Step 6: Reasoning formulation
+        - State "exact verbatim match"
+        - Note embedded context
+        </think>
+        <response>
+        {
+            "classification": "DIRECT_QUOTE",
+            "confidence": 1.0,
+            "reasoning": "Exact verbatim match found embedded within longer economic analysis text."
+        }
+        </response>
+
+    - role: user
+      content: |
+        <generated_text>
+        Quantum computing could revolutionize cryptography and drug discovery.
+        </generated_text>
+
+        <source_text>
+        Quantum computing represents a paradigm shift in computational power. These systems leverage quantum mechanical properties to perform calculations. Potential applications include revolutionizing cryptography, accelerating drug discovery processes, and optimizing complex logistics problems. However, significant technical challenges remain before widespread adoption.
+        </source_text>
+
+        <semantic_similarity_score> 0.71 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        <think>
+        Step 1: Initial assessment
+        - Similarity: 0.71 (moderately high)
+        - Topic: Quantum computing applications
+        - Must check for exact match first
+
+        Step 2: Substring match check
+        - Generated: "Quantum computing could revolutionize cryptography and drug discovery."
+        - Source: Contains "revolutionizing cryptography" and "drug discovery processes"
+        - Checking for exact substring... No complete exact match found
+        - Close words present but not identical sentence structure
+
+        Step 3: Detailed word-level comparison
+        - "Quantum computing" - Present in source (matches)
+        - "could revolutionize" vs "revolutionizing" - Different grammatical form (modal verb + base form vs gerund)
+        - "cryptography and drug discovery" vs "revolutionizing cryptography, accelerating drug discovery processes"
+          * "cryptography" matches exactly
+          * "and" vs comma separation (structural difference)
+          * "drug discovery" vs "drug discovery processes" (second has additional word)
+
+        Step 4: Semantic analysis
+        - Core concepts: Identical (quantum computing applications)
+        - Specific applications mentioned: Same two (cryptography, drug discovery)
+        - Grammatical structure: Different (modal construction vs gerund list)
+        - Information content: Very close but not verbatim
+
+        Step 5: Classification decision
+        - Not DIRECT_QUOTE (words differ, structure differs)
+        - Core meaning preserved with close wording → CLOSE_PARAPHRASE
+        - This is subtle: very close to source but not exact
+        - Key differences: "could revolutionize" vs "revolutionizing", "and" vs comma
+
+        Step 6: Confidence assignment
+        - Clear case of close paraphrase (not exact, not loose)
+        - Minor grammatical changes distinguish it from direct quote
+        - Calibration: 0.85-0.94 for clear semantic equivalence
+        - Confidence: 0.85
+
+        Step 7: Reasoning formulation
+        - Must cite specific differences observed
+        - Show that concept matches but form differs
+        </think>
+        <response>
+        {
+            "classification": "CLOSE_PARAPHRASE",
+            "confidence": 0.85,
+            "reasoning": "Concept matches but words differ (revolutionizing vs could revolutionize, and vs comma separation); meaning preserved but not verbatim."
+        }
+        </response>
+
+    - role: user
+      content: |
+        <generated_text>
+        Data quality is more important than quantity when training deep learning models.
+        </generated_text>
+
+        <source_text>
+        Machine learning algorithms require large datasets to train effectively and produce accurate predictions.
+        </source_text>
+
+        <semantic_similarity_score> 0.65 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        <think>
+        Step 1: Topic identification
+        - Both texts about: Machine learning / deep learning training
+        - Similarity: 0.65 (moderate)
+        - Related domain but may have different focus
+
+        Step 2: Substring match check
+        - Generated: "Data quality is more important than quantity when training deep learning models."
+        - Source: "Machine learning algorithms require large datasets to train effectively and produce accurate predictions."
+        - Scanning for exact match... No exact substring found
+
+        Step 3: Semantic content analysis
+        - Generated text claim: Quality > quantity in training data
+        - Source text claim: Large datasets required for effective training
+        - These are different (potentially opposite) claims about training data
+
+        Step 4: Detailed comparison
+        - Topic overlap: Both discuss ML/DL training data
+        - Key difference in focus:
+          * Source emphasizes: Need for LARGE datasets (quantity focus)
+          * Generated emphasizes: Quality MORE important than quantity (quality priority)
+        - This is a shift in argumentative stance on the same topic
+
+        Step 5: Vocabulary mapping
+        - "Data" ↔ "datasets" (close)
+        - "training" appears in both (exact match on this word)
+        - "deep learning models" ↔ "machine learning algorithms" (related concepts)
+        - But: "quality is more important than quantity" has no parallel in source
+
+        Step 6: Classification decision
+        - Not DIRECT_QUOTE (no exact match)
+        - Not CLOSE_PARAPHRASE (claim/focus differs significantly)
+        - Related topic with significant divergence → LOOSE_PARAPHRASE
+        - Same domain (ML training) but different claims about data importance
+
+        Step 7: Confidence assignment
+        - Clear topic overlap (training data)
+        - Clear focus shift (quantity need vs quality priority)
+        - This is a judgment call but fairly clear
+        - Calibration: 0.75-0.84 for probable classification
+        - Confidence: 0.75
+
+        Step 8: Reasoning formulation
+        - State "related topic"
+        - Explain the focus shift clearly
+        </think>
+        <response>
+        {
+            "classification": "LOOSE_PARAPHRASE",
+            "confidence": 0.75,
+            "reasoning": "Related topic (ML training data) but shifts focus to quality vs quantity debate rather than dataset size necessity."
+        }
+        </response>
+
+    - role: user
+      content: |
+        <generated_text>
+        Biodiversity loss threatens ecosystem stability.
+        </generated_text>
+
+        <source_text>
+        Urban planning principles evolved significantly during the 20th century. Modernist architecture emphasized functionality and efficiency. The Bauhaus movement influenced design thinking globally. Contemporary approaches prioritize sustainability and community engagement.
+        </source_text>
+
+        <semantic_similarity_score> 0.08 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        <think>
+        Step 1: Similarity assessment
+        - Provided score: 0.08 (very low)
+        - This strongly suggests no relationship
+        - Still must verify systematically
+
+        Step 2: Topic identification
+        - Generated text topic: Environmental science (biodiversity, ecosystems)
+        - Source text topic: Architecture and urban planning (design, buildings)
+        - Domains: Completely different
+
+        Step 3: Substring match check
+        - Generated: "Biodiversity loss threatens ecosystem stability."
+        - Source: Text about urban planning, architecture, Bauhaus, etc.
+        - Scanning for any overlap... No substring matches found
+
+        Step 4: Semantic overlap analysis
+        - Shared concepts: None identified
+        - Shared vocabulary: Only common words (no content words match)
+        - Thematic connection: None
+        - Note: "sustainability" appears in source but in different context (urban sustainability vs ecological)
+
+        Step 5: Classification decision
+        - No exact match → Not DIRECT_QUOTE
+        - No semantic equivalence → Not CLOSE_PARAPHRASE
+        - No meaningful topic overlap → Not LOOSE_PARAPHRASE
+        - Completely different domains → INDEPENDENT
+
+        Step 6: Confidence assignment
+        - Zero semantic overlap observed
+        - Topics are entirely distinct
+        - Very low similarity score (0.08) confirms
+        - High certainty in classification
+        - Calibration: High confidence for clear cases
+        - Confidence: 0.98
+
+        Step 7: Reasoning formulation
+        - State "completely different topics"
+        - Cite specific domain difference
+        </think>
+        <response>
+        {
+            "classification": "INDEPENDENT",
+            "confidence": 0.98,
+            "reasoning": "Completely different topics with no semantic overlap; biodiversity vs urban architecture."
+        }
+        </response>
+
+    - role: user
+      content: |
+        <generated_text>
+        The Renaissance period saw significant developments in European art and architecture.
+        </generated_text>
+
+        <source_text>
+        Historical periods are defined by cultural transformations. The medieval era preceded dramatic changes. The Renaissance period saw significant developments in European art and architecture. These innovations influenced centuries of creative expression.
+        </source_text>
+
+        <semantic_similarity_score> 0.61 </semantic_similarity_score>
+
+    - role: assistant
+      content: |
+        <think>
+        Step 1: Initial observations
+        - Similarity: 0.61 (moderate)
+        - Topic: Historical period (Renaissance)
+        - Moderate similarity suggests possible embedded quote
+
+        Step 2: Substring match check
+        - Generated: "The Renaissance period saw significant developments in European art and architecture."
+        - Source: Contains multiple sentences about historical periods
+        - Scanning systematically:
+          * Sentence 1: "Historical periods are defined..." - No match
+          * Sentence 2: "The medieval era preceded..." - No match
+          * Sentence 3: "The Renaissance period saw significant developments in European art and architecture." - EXACT MATCH FOUND
+          * Sentence 4: "These innovations influenced..." - No match
+
+        Step 3: Match verification
+        - Generated text: "The Renaissance period saw significant developments in European art and architecture."
+        - Source sentence 3: "The Renaissance period saw significant developments in European art and architecture."
+        - Character-by-character comparison: Perfect match (including capitalization, punctuation)
+
+        Step 4: Classification decision
+        - Exact substring match → DIRECT_QUOTE
+        - Embedded in broader historical context
+        - Classic pattern: sentence extracted from paragraph
+
+        Step 5: Confidence assignment
+        - Perfect word-for-word match
+        - Zero ambiguity
+        - Calibration: 1.0 for perfect verbatim matches
+        - Confidence: 1.0
+
+        Step 6: Reasoning formulation
+        - State "perfect word-for-word match"
+        - Note extraction from context
+        </think>
+        <response>
+        {
+            "classification": "DIRECT_QUOTE",
+            "confidence": 1.0,
+            "reasoning": "Perfect word-for-word match extracted from surrounding historical context."
+        }
+        </response>
+
+  query: |
+    <generated_text>
+    {{generated_text}}
+    </generated_text>
+
+    <source_text>
+    {{source_text}}
+    </source_text>
+
+    <semantic_similarity_score> {{similarity_score}} </semantic_similarity_score>
+
+  input_types:
+    generated_text: str
+    source_text: str
+    similarity_score: str

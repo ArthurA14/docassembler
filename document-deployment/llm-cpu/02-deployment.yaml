@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-cpu
+  namespace: document-assembly
+  labels:
+    app.kubernetes.io/name: llm-cpu
+    app.kubernetes.io/component: llm-cpu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: llm-cpu
+      app.kubernetes.io/component: llm-cpu
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: llm-cpu
+        app.kubernetes.io/component: llm-cpu
+    spec:
+      initContainers:
+        - name: seed-models
+          image: nexus.docker.registry/document-assembly-gateway/llm-cpu-models:v1
+          imagePullPolicy: Always
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Seeding CPU LLM models into /models..."
+              cp -av /seed-models/. /models/
+              echo "Content of /models:"
+              ls -lah /models
+
+          volumeMounts:
+            - name: llm-cpu-models
+              mountPath: /models
+
+      containers:
+        - name: localai
+          image: localai/localai:latest-cpu
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          env:
+            - name: MODELS_PATH
+              value: "/models"
+
+            - name: LOCALAI_MODELS_CONFIG_FILE
+              value: "/models/cpu-llm.yaml"
+
+            - name: CUDA_VISIBLE_DEVICES
+              value: ""
+
+          # envFrom:
+          #   - configMapRef:
+          #       name: llm-cpu-config
+
+          volumeMounts:
+            - name: llm-cpu-models
+              mountPath: /models
+
+          resources:
+            requests:
+              cpu: "4000m"
+              memory: "8Gi"
+            limits:
+              memory: "16Gi"
+
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 30
+
+      volumes:
+        - name: llm-cpu-models
+          persistentVolumeClaim:
+            claimName: llm-cpu-models-pvc
+
+      imagePullSecrets:
+        - name: nexusdns

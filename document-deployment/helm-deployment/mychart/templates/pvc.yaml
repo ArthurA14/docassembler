@@ -1,0 +1,20 @@
+{{- if .Values.sharedAssets.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "projectname.fullname" . }}-shared-assets-pvc
+  namespace: {{ include "projectname.namespace" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "projectname.fullname" . }}-shared-assets
+    app.kubernetes.io/component: storage
+    {{/* include "projectname.labels" . | nindent 4 */}}
+spec:
+  storageClassName: {{ .Values.sharedAssets.storageClassName | quote }}
+  accessModes:
+  {{- range .Values.sharedAssets.accessModes }}
+    - {{ . }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.sharedAssets.size }}
+{{- end }}

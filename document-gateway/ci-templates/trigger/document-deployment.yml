@@ -1,0 +1,8 @@
+.trigger:document-deployment:
+  stage: trigger_deploy
+  trigger:
+    project: "$document_DEPLOYMENT_PROJECT"
+    branch: "$document_DEPLOYMENT_BRANCH"
+    strategy: depend
+    forward:
+      pipeline_variables: true

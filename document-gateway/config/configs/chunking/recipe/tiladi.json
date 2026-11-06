@@ -1,0 +1,46 @@
+{
+  "name": "tiladi_chunking",
+  "schema": "v1",
+  "description": "Chunks start at '- [ S# ]', end at punctuation",
+  "language": "en",
+  "metadata": { "version": "0.1.0", "author": "document-assembly" },
+  "recipe": {
+    "delimiters": [". ", "! ", "? ", "\n"],
+    "include_delim": "prev",
+    "recursive_rules": {
+      "levels": [
+        {
+          "delimiters": [
+            "- [ S0 ] ",
+            "- [ S1 ] ",
+            "- [ S2 ] ",
+            "- [ S3 ] ",
+            "- [ S4 ] ",
+            "- [ S5 ] ",
+            "- [ S6 ] ",
+            "- [ S7 ] ",
+            "- [ S8 ] ",
+            "- [ S9 ] "
+          ],
+          "whitespace": false,
+          "include_delim": "next"
+        },
+        {
+          "delimiters": [". ", "! ", "? ", "... "],
+          "whitespace": false,
+          "include_delim": "prev"
+        },
+        {
+          "delimiters": null,
+          "whitespace": true,
+          "include_delim": "prev"
+        },
+        {
+          "delimiters": null,
+          "whitespace": false,
+          "include_delim": "prev"
+        }
+      ]
+    }
+  }
+}
